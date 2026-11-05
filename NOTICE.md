@@ -1,6 +1,14 @@
 # 来源与版权说明
 
-Snapline 是 Tendedero 的非官方 Windows 移植版。
+Cardline 是 Snapline 的非官方美化版；Snapline 是 Tendedero 的非官方 Windows 移植版。
+
+- Cardline 维护账号：https://github.com/Doris09210 。源码仓库：https://github.com/Doris09210/snapline-windows 。
+- Cardline 相对 Snapline 的改动：名称、图标、四套扁平主题（薄荷 / 天空 / 樱花 / 青柠）、绳子与夹子绘制、卡片样式、设置页与工具窗口配色、独立数据目录与更新源。功能逻辑、数据格式和快捷键沿用 Snapline v1.5.1。
+- Snapline 作者与发布账号：jiuyang5354（https://github.com/jiuyang5354 ），源码仓库 https://github.com/jiuyang5354/snapline-windows ，参考提交 `71d1b1e`。Cardline 的名称和图标为独立绘制，不使用 Snapline 的名称或图标。
+- 以下为 Snapline 原始来源说明，除名称外原样保留。
+
+---
+
 
 - 原项目作者：Alejandro Buján（https://github.com/alejandrobujan）。
 - 原项目：https://github.com/alejandrobujan/tendedero。

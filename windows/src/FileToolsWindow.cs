@@ -11,7 +11,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class FileToolRow : INotifyPropertyChanged
     {
@@ -55,7 +55,7 @@ namespace Snapline
             Action<IDictionary<string, string>> commitRename, Action<string[]> addOutputs, Action<string> openFolder)
         {
             Ui.Initialize(); ToolDesign.Initialize(); Tool = tool; this.commitRename = commitRename; this.addOutputs = addOutputs; this.openFolder = openFolder;
-            Title = "Snapline · " + Label(tool); Width = Math.Min(800, SystemParameters.WorkArea.Width - 24);
+            Title = "Cardline · " + Label(tool); Width = Math.Min(800, SystemParameters.WorkArea.Width - 24);
             Height = Math.Min(700, SystemParameters.WorkArea.Height - 24); MinWidth = Math.Min(560, Width); MinHeight = Math.Min(520, Height);
             WindowStartupLocation = WindowStartupLocation.CenterScreen; Background = ToolDesign.Brush("Paper"); FontFamily = Ui.Font;
             var root = new Grid { Margin = new Thickness(24) };
@@ -66,7 +66,7 @@ namespace Snapline
                 "勾选要处理的项目。结果另存为新文件，原文件保留，同名时自动加编号。", 12, true));
             TemplateInput = Input("文件_{n}", 170); StartInput = Input("1", 64); DigitsInput = Input("3", 64);
             EdgeInput = Input(tool == FileTool.Compress ? "1920" : "0", 85); OutputInput = Input(defaultOutput, 420); OutputInput.IsReadOnly = true;
-            ZipInput = Input("Snapline-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".zip", 280);
+            ZipInput = Input("Cardline-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".zip", 280);
             FormatInput = new ComboBox { Width = 170, Margin = new Thickness(8, 0, 14, 0), VerticalContentAlignment = VerticalAlignment.Center };
             foreach (var format in tool == FileTool.Compress ? new[] { "JPEG", "PNG", "WebP", "WebP（无损）" } : new[] { "PNG", "JPEG", "BMP", "TIFF", "WebP", "WebP（无损）", "PDF（每张单独）", "PDF（合并多页）" }) FormatInput.Items.Add(format);
             FormatInput.SelectedIndex = 0;

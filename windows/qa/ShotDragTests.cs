@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class ShotDragTests
     {
@@ -69,15 +69,15 @@ namespace Snapline
             EventHandler sample = null;
             var cursor = Native.Cursor();
             try {
-                foreach (var process in Process.GetProcessesByName("Snapline")) {
+                foreach (var process in Process.GetProcessesByName("Cardline")) {
                     using (process) {
                         string path = process.MainModule.FileName;
-                        if (!string.Equals(path, @"D:\Snapline\Snapline.exe", StringComparison.OrdinalIgnoreCase)) continue;
+                        if (!string.Equals(path, @"D:\Cardline\Cardline.exe", StringComparison.OrdinalIgnoreCase)) continue;
                         IntPtr handle = IntPtr.Zero;
-                        while ((handle = FindWindowEx(new IntPtr(-3), handle, null, "Snapline messages")) != IntPtr.Zero) {
+                        while ((handle = FindWindowEx(new IntPtr(-3), handle, null, "Cardline messages")) != IntPtr.Zero) {
                             uint owner; uint thread = GetWindowThreadProcessId(handle, out owner);
                             if (owner != process.Id) continue;
-                            if (!PostThreadMessage(thread, 0x12, IntPtr.Zero, IntPtr.Zero) || !process.WaitForExit(5000)) throw new Exception("Cannot suspend installed Snapline for isolated test");
+                            if (!PostThreadMessage(thread, 0x12, IntPtr.Zero, IntPtr.Zero) || !process.WaitForExit(5000)) throw new Exception("Cannot suspend installed Cardline for isolated test");
                             restart = path; break;
                         }
                     }
@@ -99,7 +99,7 @@ namespace Snapline
                 var grid = new Grid(); grid.ColumnDefinitions.Add(new ColumnDefinition()); grid.ColumnDefinitions.Add(new ColumnDefinition());
                 grid.Children.Add(receiver); Grid.SetColumn(blank, 1); grid.Children.Add(blank);
                 var area = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea; double scale = Native.Scale(System.Windows.Forms.Screen.PrimaryScreen);
-                window = new Window { Title = "Snapline 隔离拖拽测试", Width = 600, Height = 220, Topmost = true,
+                window = new Window { Title = "Cardline 隔离拖拽测试", Width = 600, Height = 220, Topmost = true,
                     Left = (area.Left + 150) / scale, Top = (area.Top + 350) / scale, Content = grid };
                 window.Show(); Pump(200);
                 int tensionFrames = 0; double maximumPull = 0;

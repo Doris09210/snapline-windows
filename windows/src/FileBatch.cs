@@ -10,7 +10,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Snapline
+namespace Cardline
 {
     internal enum FileTool { Rename, Convert, Compress, Zip, Pdf }
 

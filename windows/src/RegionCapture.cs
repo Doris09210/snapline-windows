@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class ScreenCapture
     {
@@ -87,7 +87,7 @@ namespace Snapline
         internal RegionCapture(Bitmap desktop, Rectangle bounds, bool includeCursor)
         {
             this.desktop = desktop; desktopBounds = bounds; this.includeCursor = includeCursor;
-            Text = "Snapline · 区域截图";
+            Text = "Cardline · 区域截图";
             FormBorderStyle = Forms.FormBorderStyle.None; StartPosition = Forms.FormStartPosition.Manual;
             AutoScaleMode = Forms.AutoScaleMode.None; Bounds = bounds;
             TopMost = true; ShowInTaskbar = false; DoubleBuffered = true; KeyPreview = true;

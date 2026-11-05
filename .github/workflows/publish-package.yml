@@ -26,7 +26,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
-      PACKAGE_ID: jiuyang5354.Snapline.Windows
+      PACKAGE_ID: Doris09210.Cardline.Windows
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -44,10 +44,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Could not read release.' }
           $release = $releaseJson | ConvertFrom-Json
           if ($release.isDraft -or $release.tagName -cne $tag) { throw 'Release must be published and match the requested tag.' }
-          $fileName = 'Snapline-Windows-' + $tag + '.zip'
+          $fileName = 'Cardline-Windows-' + $tag + '.zip'
           $asset = @($release.assets | Where-Object { $_.name -ceq $fileName -and $_.state -eq 'uploaded' })
           if ($asset.Count -ne 1) { throw 'Expected exactly one uploaded portable ZIP.' }
-          $downloadRoot = Join-Path $env:RUNNER_TEMP ('Snapline-' + $tag)
+          $downloadRoot = Join-Path $env:RUNNER_TEMP ('Cardline-' + $tag)
           New-Item -ItemType Directory -Force -Path $downloadRoot | Out-Null
           gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $fileName --pattern SHA256SUMS.txt --dir $downloadRoot
           if ($LASTEXITCODE -ne 0) { throw 'Release download failed.' }
@@ -73,7 +73,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $config = Join-Path $env:RUNNER_TEMP 'Snapline.nuget.config'
+          $config = Join-Path $env:RUNNER_TEMP 'Cardline.nuget.config'
           '<configuration><packageSources><clear /></packageSources></configuration>' | Set-Content -LiteralPath $config -Encoding utf8
           try {
             nuget sources Add -Name GitHub -Source ('https://nuget.pkg.github.com/' + $env:GITHUB_REPOSITORY_OWNER + '/index.json') -Username $env:GITHUB_REPOSITORY_OWNER -Password $env:GH_TOKEN -StorePasswordInClearText -ConfigFile $config -NonInteractive
@@ -81,7 +81,7 @@ jobs:
             $packagePath = Join-Path $PWD ('windows/dist/nuget/' + $env:PACKAGE_ID + '.' + $env:PACKAGE_VERSION + '.nupkg')
             nuget push $packagePath -Source GitHub -ApiKey $env:GH_TOKEN -ConfigFile $config -SkipDuplicate -NonInteractive
             if ($LASTEXITCODE -ne 0) { throw 'Package publication failed.' }
-            $verifyRoot = Join-Path $env:RUNNER_TEMP 'Snapline-package-verification'
+            $verifyRoot = Join-Path $env:RUNNER_TEMP 'Cardline-package-verification'
             nuget install $env:PACKAGE_ID -Version $env:PACKAGE_VERSION -Source GitHub -ConfigFile $config -OutputDirectory $verifyRoot -DirectDownload -NoHttpCache -NonInteractive
             if ($LASTEXITCODE -ne 0) { throw 'Could not download the published package.' }
             Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -94,9 +94,9 @@ jobs:
                 try { $expected = [BitConverter]::ToString($hasher.ComputeHash($stream)).Replace('-', '') }
                 finally { $stream.Dispose() }
                 $entryPath = $entry.FullName.Replace('\', '/')
-                if (-not $entryPath.StartsWith('Snapline/', [StringComparison]::Ordinal)) { throw 'Unexpected portable archive root.' }
-                $relative = $entryPath.Substring('Snapline/'.Length)
-                $installedRoot = [IO.Path]::GetFullPath((Join-Path $verifyRoot ($env:PACKAGE_ID + '.' + $env:PACKAGE_VERSION + '/tools/Snapline')))
+                if (-not $entryPath.StartsWith('Cardline/', [StringComparison]::Ordinal)) { throw 'Unexpected portable archive root.' }
+                $relative = $entryPath.Substring('Cardline/'.Length)
+                $installedRoot = [IO.Path]::GetFullPath((Join-Path $verifyRoot ($env:PACKAGE_ID + '.' + $env:PACKAGE_VERSION + '/tools/Cardline')))
                 $installedFile = [IO.Path]::GetFullPath((Join-Path $installedRoot $relative))
                 if (-not $installedFile.StartsWith($installedRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Portable path escaped its directory.' }
                 if ((Get-FileHash -LiteralPath $installedFile -Algorithm SHA256).Hash -cne $expected) { throw ('Published package file differs: ' + $entry.Name) }

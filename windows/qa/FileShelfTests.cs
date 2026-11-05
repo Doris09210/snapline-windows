@@ -9,12 +9,12 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using ShelfItem = Snapline.Dropline.ShelfItem;
-using ShelfStore = Snapline.Dropline.ShelfStore;
-using ShelfWindow = Snapline.Dropline.ShelfWindow;
-using ShelfState = Snapline.Dropline.ShelfState;
+using ShelfItem = Cardline.Dropline.ShelfItem;
+using ShelfStore = Cardline.Dropline.ShelfStore;
+using ShelfWindow = Cardline.Dropline.ShelfWindow;
+using ShelfState = Cardline.Dropline.ShelfState;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class FileShelfTests
     {
@@ -76,7 +76,7 @@ namespace Snapline
                 Check(controller.Store.Settings.FileShelfEnabled && !controller.Store.Settings.FileShelfAnyApp && !controller.Store.Settings.FileShelfKeepAfterDragOut,
                     "Legacy settings enable the shelf with Explorer-only expansion and remove-after-success defaults");
                 Check(store.Root == Path.Combine(root, "FileShelf") && shelf.State == ShelfState.Hidden,
-                    "The empty shelf starts hidden and uses the isolated Snapline data root");
+                    "The empty shelf starts hidden and uses the isolated Cardline data root");
                 string source = Path.Combine(root, "原始文件"); Directory.CreateDirectory(source);
                 string first = Path.Combine(source, "设计稿.txt"), second = Path.Combine(source, "中文 名称.pdf"), folder = Path.Combine(source, "文件夹");
                 File.WriteAllText(first, "Original text"); File.WriteAllText(second, "Synthetic PDF fixture"); Directory.CreateDirectory(folder);
@@ -284,7 +284,7 @@ namespace Snapline
                     else e.Effects = DragDropEffects.None;
                     e.Handled = true;
                 };
-                target = new Window { Title = "Snapline 测试接收窗口", Width = 300, Height = 200, Left = 480, Top = 180, Topmost = true, Content = targetText };
+                target = new Window { Title = "Cardline 测试接收窗口", Width = 300, Height = 200, Left = 480, Top = 180, Topmost = true, Content = targetText };
                 target.Show(); Pump(300);
                 Point from = SourcePoint(sourceProcess, 150, 100);
                 Drag(from, new Point(from.X + 70, from.Y + 30));
@@ -345,7 +345,7 @@ namespace Snapline
         {
             var app = new Application();
             var text = new TextBlock { Text = "生成的测试文件\n拖放测试.txt", FontSize = 20, Padding = new Thickness(24), Background = Brushes.Beige };
-            var window = new Window { Title = "Snapline 独立测试源文件", Width = 280, Height = 190, Left = 120, Top = 180, Topmost = true, Content = text };
+            var window = new Window { Title = "Cardline 独立测试源文件", Width = 280, Height = 190, Left = 120, Top = 180, Topmost = true, Content = text };
             bool pressed = false; Point origin = new Point();
             text.MouseLeftButtonDown += delegate(object sender, System.Windows.Input.MouseButtonEventArgs e) { pressed = true; origin = e.GetPosition(text); };
             text.MouseMove += delegate(object sender, System.Windows.Input.MouseEventArgs e) {

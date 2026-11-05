@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class Ui
     {
@@ -14,14 +14,21 @@ namespace Snapline
         internal static void Initialize()
         {
             if (Application.Current.Resources.Contains("Surface")) return;
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Snapline.Theme.xaml"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Cardline.Theme.xaml"))
                 Application.Current.Resources.MergedDictionaries.Add((ResourceDictionary)XamlReader.Load(stream));
+            ApplyTheme(Palette.Current, Palette.CurrentDark);
+        }
+
+        // Rewrites the shared application brushes so the line, toolbar, dialogs and announcement follow the chosen theme.
+        internal static void ApplyTheme(string theme, bool dark)
+        {
+            foreach (string key in Palette.Keys) Application.Current.Resources[key] = Palette.Brush(theme, dark, key);
         }
 
         internal static T Load<T>(string name) where T : class
         {
             Initialize();
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Snapline." + name + ".xaml"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Cardline." + name + ".xaml"))
                 return (T)XamlReader.Load(stream);
         }
 

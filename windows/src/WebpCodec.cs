@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Media.Imaging;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class WebpCodec
     {
@@ -13,7 +13,7 @@ namespace Snapline
         private static string Quote(string path) { return "\"" + path + "\""; }
         private static string Temporary()
         {
-            string path = Path.Combine(Path.GetTempPath(), "Snapline-image-" + Guid.NewGuid().ToString("N") + ".png");
+            string path = Path.Combine(Path.GetTempPath(), "Cardline-image-" + Guid.NewGuid().ToString("N") + ".png");
             using (new FileStream(path, FileMode.CreateNew, FileAccess.Write)) { }
             return path;
         }

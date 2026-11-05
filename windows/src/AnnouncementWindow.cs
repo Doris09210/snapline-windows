@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class AnnouncementWindow : Window
     {
@@ -17,13 +17,13 @@ namespace Snapline
         internal AnnouncementWindow()
         {
             Ui.Initialize();
-            Title = "Snapline · 更新公告";
+            Title = "Cardline · 更新公告";
             Width = Math.Min(620, SystemParameters.WorkArea.Width - 24);
             Height = Math.Min(560, SystemParameters.WorkArea.Height - 24);
             ResizeMode = ResizeMode.NoResize;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             Background = Ui.Brush("Paper"); FontFamily = Ui.Font;
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Snapline.ico"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Cardline.ico"))
                 Icon = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
             var panel = new Grid { Margin = new Thickness(24) };
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -34,7 +34,7 @@ namespace Snapline
             var version = Ui.Text("v" + Version + " · Windows 预发布", 12, true);
             version.Margin = new Thickness(0, 8, 0, 20); Grid.SetRow(version, 1); panel.Children.Add(version);
             string notes;
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Snapline.Announcement"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Cardline.Announcement"))
             using (var reader = new StreamReader(stream)) notes = reader.ReadToEnd();
             Notes = new TextBox { Text = notes, IsReadOnly = true, TextWrapping = TextWrapping.Wrap,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,

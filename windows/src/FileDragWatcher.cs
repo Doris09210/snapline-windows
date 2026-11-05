@@ -3,9 +3,9 @@ using System;
 using System.Diagnostics;
 using System.Windows.Threading;
 
-namespace Snapline.Dropline
+namespace Cardline.Dropline
 {
-    // Detects a threshold-crossing drag from Snapline's existing mouse polling timer.
+    // Detects a threshold-crossing drag from Cardline's existing mouse polling timer.
     // Source-window checks are queued once per drag, outside the input sampling path.
     internal sealed class DragWatcher : IDisposable
     {

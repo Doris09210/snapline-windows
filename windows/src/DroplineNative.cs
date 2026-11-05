@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Snapline.Dropline
+namespace Cardline.Dropline
 {
     internal static class Native
     {

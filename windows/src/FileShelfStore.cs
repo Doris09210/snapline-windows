@@ -10,7 +10,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Snapline.Dropline
+namespace Cardline.Dropline
 {
     // One tile on the shelf. A tile can hold one file or a stack of several dropped together.
     internal sealed class ShelfItem
@@ -189,11 +189,11 @@ namespace Snapline.Dropline
                         var header = BitmapFrame.Create(stream, BitmapCreateOptions.DelayCreation, BitmapCacheOption.None);
                         width = header.PixelWidth; height = header.PixelHeight;
                     }
-                    return width >= height ? Snapline.ImageStore.Load(path, Math.Min(width, size * 2)) :
-                        Snapline.ImageStore.Load(path, 0, Math.Min(height, size * 2));
+                    return width >= height ? Cardline.ImageStore.Load(path, Math.Min(width, size * 2)) :
+                        Cardline.ImageStore.Load(path, 0, Math.Min(height, size * 2));
                 }
             }
-            catch (Exception ex) { if (!Snapline.ImageStore.IsImageError(ex) && !(ex is OutOfMemoryException) && !(ex is OverflowException)) throw; }
+            catch (Exception ex) { if (!Cardline.ImageStore.IsImageError(ex) && !(ex is OutOfMemoryException) && !(ex is OverflowException)) throw; }
             return ShellIcon(path);
         }
 

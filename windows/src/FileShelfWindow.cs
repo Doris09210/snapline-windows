@@ -16,7 +16,7 @@ using System.Windows.Threading;
 using System.Collections.Specialized;
 using System.Windows.Interop;
 
-namespace Snapline.Dropline
+namespace Cardline.Dropline
 {
     internal enum ShelfState { Hidden, Tab, Open }
 
@@ -65,24 +65,25 @@ namespace Snapline.Dropline
         private Border dropHint;
         public bool KeepAfterDragOut { get; set; }
         internal event Action<string> Error;
-        internal event Action<Snapline.FileTool, string[]> ToolRequested;
+        internal event Action<Cardline.FileTool, string[]> ToolRequested;
         internal bool IsInteracting { get { return draggingOut || dragOver || busy; } }
         internal bool Enabled = true;
         public IntPtr Handle { get; private set; }
         public ShelfState State { get { return state; } }
         private string status = "拖入暂存，拖出使用";
-        private Brush Paper { get { return Brush(dark ? "#252726" : "#FAFAF7"); } }
-        private Brush Ink { get { return Brush(dark ? "#EFEFE7" : "#262B28"); } }
-        private Brush Muted { get { return Brush(dark ? "#A7ADA6" : "#7C837B"); } }
-        private Brush Line { get { return Brush(dark ? "#424640" : "#E1E4DC"); } }
-        private Brush Tile { get { return Brush(dark ? "#30332E" : "#F0F2EC"); } }
-        private static Brush Brush(string hex) { var b = (SolidColorBrush)new BrushConverter().ConvertFromString(hex); b.Freeze(); return b; }
-        private static readonly Brush Accent = Brush("#D95B31");
+        // Shelf colors come from the shared palette; `theme` remembers which table the current visuals were built from.
+        private string theme = Palette.Current;
+        private Brush Paper { get { return Palette.Brush(theme, dark, "Paper"); } }
+        private Brush Ink { get { return Palette.Brush(theme, dark, "Ink"); } }
+        private Brush Muted { get { return Palette.Brush(theme, dark, "Muted"); } }
+        private Brush Line { get { return Palette.Brush(theme, dark, "Line"); } }
+        private Brush Tile { get { return Palette.Brush(theme, dark, "Tint"); } }
+        private Brush Accent { get { return Palette.Brush(theme, dark, "Accent"); } }
 
         public ShelfWindow(ShelfStore store)
         {
             this.store = store;
-            Title = "Snapline · 文件暂存架";
+            Title = "Cardline · 文件暂存架";
             WindowStyle = WindowStyle.None; AllowsTransparency = true; Background = Brushes.Transparent;
             ResizeMode = ResizeMode.NoResize; ShowInTaskbar = false; Topmost = true; ShowActivated = false;
             FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI");
@@ -91,7 +92,7 @@ namespace Snapline.Dropline
               <Setter Property='Background' Value='Transparent'/><Setter Property='BorderThickness' Value='0'/><Setter Property='Padding' Value='10,7'/>
               <Setter Property='Cursor' Value='Hand'/><Setter Property='FontSize' Value='12'/>
               <Setter Property='Template'><Setter.Value><ControlTemplate TargetType='Button'><Border x:Name='surface' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Background='{TemplateBinding Background}' Padding='{TemplateBinding Padding}' CornerRadius='8'><ContentPresenter HorizontalAlignment='Center' VerticalAlignment='Center'/></Border>
-                <ControlTemplate.Triggers><Trigger Property='IsMouseOver' Value='True'><Setter TargetName='surface' Property='Opacity' Value='0.72'/></Trigger><Trigger Property='IsPressed' Value='True'><Setter TargetName='surface' Property='Opacity' Value='0.48'/></Trigger><Trigger Property='IsKeyboardFocused' Value='True'><Setter TargetName='surface' Property='BorderBrush' Value='#D95B31'/><Setter TargetName='surface' Property='BorderThickness' Value='1'/></Trigger></ControlTemplate.Triggers>
+                <ControlTemplate.Triggers><Trigger Property='IsMouseOver' Value='True'><Setter TargetName='surface' Property='Opacity' Value='0.72'/></Trigger><Trigger Property='IsPressed' Value='True'><Setter TargetName='surface' Property='Opacity' Value='0.48'/></Trigger><Trigger Property='IsKeyboardFocused' Value='True'><Setter TargetName='surface' Property='BorderBrush' Value='" + Palette.Hex(theme, dark, "Accent") + @"'/><Setter TargetName='surface' Property='BorderThickness' Value='1'/></Trigger></ControlTemplate.Triggers>
               </ControlTemplate></Setter.Value></Setter></Style>"));
             Resources.Add(typeof(System.Windows.Controls.Primitives.ScrollBar), XamlReader.Parse(@"<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType='ScrollBar'>
               <Setter Property='Width' Value='7'/><Setter Property='Background' Value='Transparent'/>
@@ -229,7 +230,7 @@ namespace Snapline.Dropline
                 var back = Frame(content, 12); back.Width = 156; back.Height = 106; back.Padding = new Thickness(6);
                 Canvas.SetLeft(back, 48 - index * 18); Canvas.SetTop(back, 58 - index * 19);
                 back.RenderTransformOrigin = new Point(.5, .5); back.RenderTransform = new RotateTransform(-index * 4);
-                Snapline.PhysicalCard.Attach(back);
+                Cardline.PhysicalCard.Attach(back);
                 back.Effect = Shadow(15, 4, index == 0 ? .19 : .10); stack.Children.Add(back);
             }
             var label = new StackPanel { Orientation = Orientation.Horizontal };
@@ -248,7 +249,7 @@ namespace Snapline.Dropline
             var body = new DockPanel { Margin = new Thickness(18) };
             var header = new Grid { Margin = new Thickness(0, 0, 0, 18) };
             header.ColumnDefinitions.Add(new ColumnDefinition()); header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var title = new StackPanel(); title.Children.Add(Text("Snapline", 10, Muted));
+            var title = new StackPanel(); title.Children.Add(Text("Cardline", 10, Muted));
             var name = Text("暂存架", 23, Ink); name.FontWeight = FontWeights.SemiBold; name.Margin = new Thickness(0, 4, 0, 0); title.Children.Add(name); header.Children.Add(title);
             var actions = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Top };
             actions.Children.Add(Button("清空", delegate { Run(store.Clear); }));
@@ -293,7 +294,7 @@ namespace Snapline.Dropline
                 button.Width = selectedTool == i ? 104 : 44; button.Height = 34; button.Padding = new Thickness(5); button.Margin = new Thickness(0, 0, 4, 0); button.ToolTip = ToolLabels[i];
                 button.Background = selectedTool == i ? Paper : Brushes.Transparent; toolStrip.Children.Add(button);
             }
-            toolLaunch.Content = "打开" + ToolLabels[selectedTool] + "  ›"; toolLaunch.IsEnabled = store.Items.Count > 0 || selectedTool == (int)Snapline.FileTool.Pdf;
+            toolLaunch.Content = "打开" + ToolLabels[selectedTool] + "  ›"; toolLaunch.IsEnabled = store.Items.Count > 0 || selectedTool == (int)Cardline.FileTool.Pdf;
             LayoutScene();
             if (InputManager.Current.MostRecentInputDevice is KeyboardDevice) ((Button)toolStrip.Children[selectedTool]).Focus();
             if (animate && previous.Length == ToolLabels.Length) for (int i = 0; i < ToolLabels.Length; i++) {
@@ -303,7 +304,7 @@ namespace Snapline.Dropline
         }
         private void LaunchTool(FileTool tool, string[] paths)
         {
-            if (paths.Length == 0 && tool != Snapline.FileTool.Pdf) return;
+            if (paths.Length == 0 && tool != Cardline.FileTool.Pdf) return;
             busy = true; hover.Stop(); collapse.Stop(); FinishMotion();
             try { RequestTool(tool, paths); } finally { busy = false; }
         }
@@ -317,7 +318,7 @@ namespace Snapline.Dropline
             var tile = new Border { Child = content, Width = 132, Margin = new Thickness(0, 0, 4, 9), Background = Brushes.Transparent, CornerRadius = new CornerRadius(12), Cursor = Cursors.Hand, ToolTip = item.Title };
             tile.MouseEnter += delegate { tile.Background = Tile; }; tile.MouseLeave += delegate { tile.Background = Brushes.Transparent; };
             tile.Tag = item;
-            Snapline.PhysicalCard.Attach(tile);
+            Cardline.PhysicalCard.Attach(tile);
             tile.PreviewMouseLeftButtonDown += (s, e) => {
                 pressedItem = item; pressPoint = e.GetPosition(this);
                 if (e.ClickCount == 2) { Open(item); e.Handled = true; }
@@ -431,10 +432,9 @@ namespace Snapline.Dropline
         internal void ApplyAppearance(string value)
         {
             appearance = value;
-            bool next = value == "Dark" || (value == "System" && object.Equals(Microsoft.Win32.Registry.GetValue(
-                @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1), 0));
-            if (dark == next) return;
-            dark = next; Rebuild();
+            bool next = Palette.IsDark(value);
+            if (dark == next && theme == Palette.Current) return;
+            dark = next; theme = Palette.Current; Rebuild();
         }
         private void SystemAppearanceChanged(object sender, Microsoft.Win32.UserPreferenceChangedEventArgs e)
         { if (appearance == "System") Dispatcher.BeginInvoke(new Action(delegate { ApplyAppearance(appearance); })); }
@@ -452,9 +452,9 @@ namespace Snapline.Dropline
                 }));
             }
             menu.Items.Add(new Separator());
-            foreach (var tool in new[] { Snapline.FileTool.Rename, Snapline.FileTool.Convert, Snapline.FileTool.Compress, Snapline.FileTool.Zip, Snapline.FileTool.Pdf }) {
+            foreach (var tool in new[] { Cardline.FileTool.Rename, Cardline.FileTool.Convert, Cardline.FileTool.Compress, Cardline.FileTool.Zip, Cardline.FileTool.Pdf }) {
                 var selectedTool = tool;
-                menu.Items.Add(MenuItem(Snapline.FileToolsWindow.Label(tool) + "…", delegate { RequestTool(selectedTool, item.Paths.ToArray()); }));
+                menu.Items.Add(MenuItem(Cardline.FileToolsWindow.Label(tool) + "…", delegate { RequestTool(selectedTool, item.Paths.ToArray()); }));
             }
             menu.Items.Add(new Separator());
             menu.Items.Add(MenuItem("移出暂存架", delegate { Run(delegate { store.Remove(item); }); }));
@@ -466,16 +466,16 @@ namespace Snapline.Dropline
         private ContextMenu ToolsMenu(Func<string[]> paths)
         {
             var menu = new ContextMenu();
-            foreach (var tool in new[] { Snapline.FileTool.Rename, Snapline.FileTool.Convert, Snapline.FileTool.Compress, Snapline.FileTool.Zip, Snapline.FileTool.Pdf }) {
+            foreach (var tool in new[] { Cardline.FileTool.Rename, Cardline.FileTool.Convert, Cardline.FileTool.Compress, Cardline.FileTool.Zip, Cardline.FileTool.Pdf }) {
                 var selectedTool = tool;
-                menu.Items.Add(MenuItem(Snapline.FileToolsWindow.Label(tool) + "…", delegate { RequestTool(selectedTool, paths()); }));
+                menu.Items.Add(MenuItem(Cardline.FileToolsWindow.Label(tool) + "…", delegate { RequestTool(selectedTool, paths()); }));
             }
             menu.Opened += delegate { busy = true; hover.Stop(); collapse.Stop(); };
             menu.Closed += delegate { busy = false; collapse.Start(); };
             return menu;
         }
 
-        private void RequestTool(Snapline.FileTool tool, string[] paths)
+        private void RequestTool(Cardline.FileTool tool, string[] paths)
         { if (ToolRequested != null) ToolRequested(tool, paths); }
 
         internal void RefreshItems() { Rebuild(); }
@@ -505,7 +505,7 @@ namespace Snapline.Dropline
             finally
             {
                 draggingOut = false;
-                var motion = Snapline.PhysicalCard.Get(source as FrameworkElement);
+                var motion = Cardline.PhysicalCard.Get(source as FrameworkElement);
                 if (motion != null) motion.Release();
             }
 
@@ -626,7 +626,7 @@ namespace Snapline.Dropline
         }
 
         private static bool IsDropError(Exception ex)
-        { return Snapline.ImageStore.IsImageError(ex) || ex is System.Runtime.InteropServices.ExternalException || ex is OutOfMemoryException || ex is OverflowException; }
+        { return Cardline.ImageStore.IsImageError(ex) || ex is System.Runtime.InteropServices.ExternalException || ex is OutOfMemoryException || ex is OverflowException; }
         private void Report(Exception ex) { if (Error != null) Error("暂存架操作未完成：" + ex.Message); }
         private void Run(Action action) { try { action(); } catch (Exception ex) { if (!IsDropError(ex)) throw; Report(ex); } }
 

@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class ToolSheen : ShaderEffect
     {
@@ -14,7 +14,7 @@ namespace Snapline
         private static PixelShader Load()
         {
             var value = new PixelShader();
-            using (var stream = typeof(ToolSheen).Assembly.GetManifestResourceStream("Snapline.ToolSheen.ps")) value.SetStreamSource(stream);
+            using (var stream = typeof(ToolSheen).Assembly.GetManifestResourceStream("Cardline.ToolSheen.ps")) value.SetStreamSource(stream);
             return value;
         }
         private ToolSheen() { PixelShader = shader; UpdateShaderValue(InputProperty); UpdateShaderValue(CenterProperty); }

@@ -7,7 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class SettingsWindow : Window
     {
@@ -22,6 +22,7 @@ namespace Snapline
         private bool startup;
         private bool feedbackError;
         private string appearance;
+        private string theme;
         internal bool RecordingHotkey { get { return Part<TextBox>("HotkeyInput").IsKeyboardFocusWithin || Part<TextBox>("CaptureHotkeyInput").IsKeyboardFocusWithin || Part<TextBox>("ClearHotkeyInput").IsKeyboardFocusWithin; } }
         private const string KeyHelp = "支持单键和 Ctrl / Alt / Shift / Win 组合。";
 
@@ -29,7 +30,7 @@ namespace Snapline
         {
             this.controller = controller;
             View = Ui.Load<Border>("Settings");
-            Title = "Snapline · 设置";
+            Title = "Cardline · 设置";
             Width = 960; Height = 660; ResizeMode = ResizeMode.NoResize;
             WindowStyle = WindowStyle.None; AllowsTransparency = true;
             Background = System.Windows.Media.Brushes.Transparent;
@@ -41,7 +42,7 @@ namespace Snapline
                 Height = Math.Min(660, SystemParameters.WorkArea.Height - 24);
                 Content = new Viewbox { Child = View };
             }
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Snapline.ico"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Cardline.ico"))
                 Icon = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
             Part<Grid>("SettingsTitlebar").MouseLeftButtonDown += delegate { DragMove(); };
             Click("CloseSettings", Close);
@@ -77,6 +78,12 @@ namespace Snapline
             Loaded += delegate { if (Part<StackPanel>("KeysPage").Visibility == Visibility.Visible) Part<TextBox>("HotkeyInput").Focus(); };
             var settings = controller.Store.Settings;
             appearance = settings.Appearance == "Dark" || settings.Appearance == "System" ? settings.Appearance : "Light";
+            theme = Palette.Normalize(settings.Theme);
+            foreach (string name in Palette.Themes) {
+                string current = name;
+                Part<RadioButton>("Palette" + name).Checked += delegate { theme = current; ApplyAppearance(); Feedback("有未保存的修改", false); };
+            }
+            Part<RadioButton>("Palette" + theme).IsChecked = true;
             foreach (string mode in new[] { "Light", "Dark", "System" }) {
                 string current = mode;
                 Part<RadioButton>("Theme" + mode).Checked += delegate { appearance = current; ApplyAppearance(); Feedback("有未保存的修改", false); };
@@ -120,11 +127,8 @@ namespace Snapline
         internal T Part<T>(string name) where T : class { return (T)View.FindName(name); }
         internal void ApplyAppearance()
         {
-            bool dark = appearance == "Dark" || (appearance == "System" && Equals(Microsoft.Win32.Registry.GetValue(
-                @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1), 0));
-            string[] names = { "Paper", "Surface", "Sidebar", "Tint", "Ink", "Muted", "Line", "Accent", "Track", "NavSelected", "PrimaryFill", "PrimaryText" };
-            string[] colors = dark ? new[] { "#1D1F20", "#27292B", "#191B1C", "#2B2D2F", "#EEEFEA", "#A3A6A5", "#383B3D", "#EF8B61", "#55595B", "#303335", "#E3E6E3", "#202322" } :
-                new[] { "#FAFAF7", "#FFFFFF", "#F2F2EE", "#EEEFEA", "#262B28", "#70766F", "#E2E4DD", "#C74F2D", "#CDD1C9", "#E5E8DF", "#2A302B", "#FFFFFF" };
+            bool dark = Palette.IsDark(appearance);
+            string[] names = Palette.Keys;
             if (SystemParameters.HighContrast) {
                 for (int i = 0; i < names.Length; i++) View.Resources[names[i]] =
                     names[i] == "Ink" || names[i] == "Muted" ? SystemColors.WindowTextBrush :
@@ -135,9 +139,7 @@ namespace Snapline
                 if (Motion != null) Motion.RefreshColors();
                 return;
             }
-            for (int i = 0; i < names.Length; i++) {
-                var brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colors[i])); brush.Freeze(); View.Resources[names[i]] = brush;
-            }
+            for (int i = 0; i < names.Length; i++) View.Resources[names[i]] = Palette.Brush(theme, dark, names[i]);
             Part<TextBlock>("SettingsFeedback").Foreground = feedbackError ? Brushes.Firebrick : Brush("Muted");
             RefreshKeyHint(Part<TextBlock>("KeyHint").Text);
             if (Motion != null) Motion.RefreshColors();
@@ -269,15 +271,17 @@ namespace Snapline
                 return;
             }
             string previousAppearance = controller.Store.Settings.Appearance;
+            string previousTheme = controller.Store.Settings.Theme;
             bool previousBlankDrop = controller.Store.Settings.RemoveOnBlankDrop;
             bool previousShowOnCapture = controller.Store.Settings.ShowOnCapture;
             controller.Store.Settings.ShowOnCapture = Part<CheckBox>("ShowOnCaptureToggle").IsChecked == true;
             controller.Store.Settings.RemoveOnBlankDrop = Part<CheckBox>("BlankDropToggle").IsChecked == true;
             controller.Store.Settings.Appearance = appearance;
+            controller.Store.Settings.Theme = theme;
             try { controller.Store.Save(); }
-            catch (System.IO.IOException ex) { controller.Store.Settings.Appearance = previousAppearance; controller.Store.Settings.RemoveOnBlankDrop = previousBlankDrop; controller.Store.Settings.ShowOnCapture = previousShowOnCapture; Feedback("设置保存失败：" + ex.Message, true); return; }
-            catch (UnauthorizedAccessException ex) { controller.Store.Settings.Appearance = previousAppearance; controller.Store.Settings.RemoveOnBlankDrop = previousBlankDrop; controller.Store.Settings.ShowOnCapture = previousShowOnCapture; Feedback("设置保存失败：" + ex.Message, true); return; }
-            controller.Files.Window.ApplyAppearance(appearance);
+            catch (System.IO.IOException ex) { controller.Store.Settings.Appearance = previousAppearance; controller.Store.Settings.Theme = previousTheme; controller.Store.Settings.RemoveOnBlankDrop = previousBlankDrop; controller.Store.Settings.ShowOnCapture = previousShowOnCapture; Feedback("设置保存失败：" + ex.Message, true); return; }
+            catch (UnauthorizedAccessException ex) { controller.Store.Settings.Appearance = previousAppearance; controller.Store.Settings.Theme = previousTheme; controller.Store.Settings.RemoveOnBlankDrop = previousBlankDrop; controller.Store.Settings.ShowOnCapture = previousShowOnCapture; Feedback("设置保存失败：" + ex.Message, true); return; }
+            controller.ApplyTheme();
             DialogResult = true;
         }
 

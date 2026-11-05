@@ -11,7 +11,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class LineGroupsProbe
     {
@@ -70,7 +70,7 @@ namespace Snapline
                 controller = new Controller(root, false);
                 ((DispatcherTimer)typeof(Controller).GetField("mouse", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(controller)).Stop();
                 controller.Hover.Dispose();
-                var line = controller.Line; line.Title = "Snapline · 截图分组独立预览";
+                var line = controller.Line; line.Title = "Cardline · 截图分组独立预览";
                 line.Reveal(System.Windows.Forms.Screen.PrimaryScreen);
                 if (!preview) line.PreviewBackdrop(Fixture(0), 1);
                 Pump(380);
@@ -91,7 +91,7 @@ namespace Snapline
                         actions.Children.Add(Ui.Button("右侧面板", delegate { if (controller.Files.Window.State != Dropline.ShelfState.Open) controller.Files.Window.Toggle(); }));
                     }
                     actions.Children.Add(Ui.Button("关闭预览", delegate { app.Shutdown(); })); panel.Children.Add(actions);
-                    var host = new Window { Title = physicsPreview ? "Snapline · 两处物理交互预览（独立数据）" : "Snapline · 截图分组预览（独立数据）", Width = 680, Height = 230,
+                    var host = new Window { Title = physicsPreview ? "Cardline · 两处物理交互预览（独立数据）" : "Cardline · 截图分组预览（独立数据）", Width = 680, Height = 230,
                         WindowStartupLocation = WindowStartupLocation.CenterScreen, Content = panel };
                     host.Closed += delegate { app.Shutdown(); }; host.Show(); app.Run(); return 0;
                 }

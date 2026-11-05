@@ -9,7 +9,7 @@ using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class ShotCard : Grid
     {
@@ -27,7 +27,7 @@ namespace Snapline
         private Point? down;
         private bool held;
 
-        internal ShotCard(Shot shot, Controller controller, GlassBackdrop backdrop)
+        internal ShotCard(Shot shot, Controller controller)
         {
             Shot = shot;
             this.controller = controller;
@@ -52,36 +52,25 @@ namespace Snapline
             ToolTip = "单击 / C 复制 · 双击预览 · 长按 / A 编辑 · D 或 Delete 取下 · 拖出使用";
 
             var image = new Image { Source = shot.Thumbnail, Width = photoWidth, Height = photoHeight, Stretch = Stretch.Uniform,
-                Clip = new RectangleGeometry(new Rect(0, 0, photoWidth, photoHeight), 4, 4) };
+                Clip = new RectangleGeometry(new Rect(0, 0, photoWidth, photoHeight), 6, 6) };
             RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+            // Flat card: a solid surface with rounded corners and a 2px border in the theme accent. No glass, no shadow.
             var frame = new Border {
+                Name = "CardFrame",
                 Width = photoWidth + 20, Height = photoHeight + 20,
-                CornerRadius = new CornerRadius(14),
-                Child = new GlassFrame(new Size(photoWidth + 20, photoHeight + 20), 14, backdrop, image),
+                CornerRadius = new CornerRadius(12), Padding = new Thickness(8),
+                Background = Ui.Brush("Surface"), BorderBrush = Ui.Brush("Accent"), BorderThickness = new Thickness(2),
+                Child = image,
                 HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(0, 14, 0, 0),
-                Effect = new DropShadowEffect { Color = Colors.Black, BlurRadius = 12, ShadowDepth = 5, Opacity = 0.20 }
+                Margin = new Thickness(0, 14, 0, 0)
             };
             Children.Add(frame);
-            var pin = new Canvas { Width = 9, Height = 26,
-                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false };
-            pin.Children.Add(new Rectangle {
-                Width = 9, Height = 26, RadiusX = 3.5, RadiusY = 3.5,
-                Fill = new LinearGradientBrush(new GradientStopCollection {
-                    new GradientStop(Color.FromRgb(170, 177, 181), 0), new GradientStop(Color.FromRgb(244, 246, 247), 0.35),
-                    new GradientStop(Color.FromRgb(205, 210, 215), 0.65), new GradientStop(Color.FromRgb(137, 145, 152), 1)
-                }, new Point(0, 0), new Point(1, 0)),
-                Stroke = new SolidColorBrush(Color.FromArgb(160, 255, 255, 255)), StrokeThickness = 0.6,
-                Effect = new DropShadowEffect { Color = Colors.Black, BlurRadius = 3, ShadowDepth = 1, Opacity = 0.3 }
-            });
-            var groove = new Rectangle { Width = 5, Height = 1.5, RadiusX = 1, RadiusY = 1, Fill = new SolidColorBrush(Color.FromArgb(100, 50, 55, 63)) };
-            Canvas.SetLeft(groove, 2); Canvas.SetTop(groove, 9); pin.Children.Add(groove);
-            Children.Add(pin);
+            Children.Add(Peg());
 
             remove = new Button {
-                Content = "×", FontFamily = new FontFamily("Segoe UI"), FontSize = 16, Width = 22, Height = 22,
-                Foreground = Brushes.White, Background = new SolidColorBrush(Color.FromArgb(220, 40, 44, 50)), Style = (Style)Application.Current.FindResource(typeof(Button)),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(90, 255, 255, 255)), BorderThickness = new Thickness(1),
+                Content = "×", FontFamily = new FontFamily("Segoe UI"), FontSize = 15, Width = 22, Height = 22,
+                Foreground = Ui.Brush("PrimaryText"), Background = Ui.Brush("Accent"), Style = (Style)Application.Current.FindResource(typeof(Button)),
+                BorderBrush = Ui.Brush("Surface"), BorderThickness = new Thickness(2),
                 Padding = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top,
                 Margin = new Thickness((Width - frame.Width) / 2 + 3, 17, 0, 0), Opacity = 0, Focusable = false,
                 ToolTip = controller.Store.Owns(shot.Path) ? "取下截图：收件夹图片进入回收站" : "取下截图：保留外部原文件"
@@ -90,8 +79,8 @@ namespace Snapline
             remove.Click += delegate { controller.Discard(Shot); };
             Children.Add(remove);
             badge = new Border {
-                Child = new TextBlock { Text = "✓ 已复制", FontFamily = Ui.Font, Foreground = Brushes.White, FontSize = 11 },
-                Background = new SolidColorBrush(Color.FromArgb(235, 40, 44, 50)), CornerRadius = new CornerRadius(11),
+                Child = new TextBlock { Text = "✓ 已复制", FontFamily = Ui.Font, Foreground = Ui.Brush("PrimaryText"), FontSize = 11 },
+                Background = Ui.Brush("Accent"), CornerRadius = new CornerRadius(11),
                 Padding = new Thickness(10, 4, 10, 4), VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Center, Visibility = Visibility.Hidden, IsHitTestVisible = false
             };
@@ -110,6 +99,20 @@ namespace Snapline
             ContextMenu = Menu();
             ContextMenu.Opened += delegate { controller.Busy = true; };
             ContextMenu.Closed += delegate { controller.Busy = false; };
+        }
+
+        // A small cartoon peg: a soft pill body with a slit and a round hook, all in the theme colors.
+        private static Canvas Peg()
+        {
+            var peg = new Canvas { Name = "CardPeg", Width = 16, Height = 28,
+                HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false };
+            var body = new Rectangle { Width = 16, Height = 24, RadiusX = 8, RadiusY = 8, Fill = Ui.Brush("AccentSoft"), Stroke = Ui.Brush("Accent"), StrokeThickness = 2 };
+            Canvas.SetLeft(body, 0); Canvas.SetTop(body, 4); peg.Children.Add(body);
+            var slit = new Rectangle { Width = 6, Height = 2, RadiusX = 1, RadiusY = 1, Fill = Ui.Brush("Accent") };
+            Canvas.SetLeft(slit, 5); Canvas.SetTop(slit, 14); peg.Children.Add(slit);
+            var hook = new Ellipse { Width = 8, Height = 8, Fill = Ui.Brush("Surface"), Stroke = Ui.Brush("Accent"), StrokeThickness = 2 };
+            Canvas.SetLeft(hook, 4); Canvas.SetTop(hook, 0); peg.Children.Add(hook);
+            return peg;
         }
 
         private ContextMenu Menu()

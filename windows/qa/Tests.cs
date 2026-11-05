@@ -20,7 +20,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class Tests
     {
@@ -237,16 +237,15 @@ namespace Snapline
                 Check(blankPixel[3] == 0 && Hit(handle, line.PointToScreen(new Point(20, 80))) == -1,
                     "Space outside the individual photo frames stays fully transparent and passes clicks to the desktop");
                 cards = canvas.Children.OfType<ShotCard>().ToArray();
-                var frames = Descendants(line).OfType<GlassFrame>().ToArray();
-                Check(frames.Length == cards.Length && frames.All(frame => frame.Children.OfType<Image>().Any(materialImage => !materialImage.IsHitTestVisible && materialImage.Source != null)),
-                    "Every live photo container has its own rendered optical material beneath the screenshot");
+                var frames = Descendants(line).OfType<Border>().Where(border => border.Name == "CardFrame").ToArray();
+                Check(frames.Length == cards.Length && frames.All(frame => frame.BorderThickness.Left == 2 && frame.CornerRadius.TopLeft == 12 && frame.Child is Image),
+                    "Every live photo card is a flat rounded frame with a 2px theme border around the screenshot");
                 foreach (var card in cards)
                 {
                     var photo = Descendants(card).OfType<Image>().Single(photoImage => photoImage.Source == card.Shot.Thumbnail);
                     Check(Math.Abs(photo.ActualWidth / photo.ActualHeight - card.Shot.Thumbnail.Width / card.Shot.Thumbnail.Height) < 0.001,
                         "Original aspect ratio is preserved without cropping for " + card.Shot.Thumbnail.PixelWidth + "x" + card.Shot.Thumbnail.PixelHeight);
                 }
-                CheckGlassMaterial();
                 SaveRender(line, Path.Combine(output, "line-render.png"));
                 SavePreview(line, Path.Combine(output, "preview.png"), controller.Sink.HotkeyText);
 
@@ -280,7 +279,7 @@ namespace Snapline
 
                 var full = new Window { WindowStyle = WindowStyle.None, ResizeMode = ResizeMode.NoResize,
                     ShowActivated = false, ShowInTaskbar = false, Width = 400, Height = 200,
-                    Background = Brushes.Black, Title = "Snapline QA fullscreen fixture" };
+                    Background = Brushes.Black, Title = "Cardline QA fullscreen fixture" };
                 full.Show();
                 var fullHandle = new WindowInteropHelper(full).Handle;
                 var bounds = display.Bounds;
@@ -377,10 +376,10 @@ namespace Snapline
             }
             controller.SetAutoUpdates(false);
             Check(!new ImageStore(controller.Store.Root).Settings.AutoCheckUpdates, "Disabling automatic update checks survives restart");
-            string command = Startup.Command(@"C:\含 空格\Snapline.exe", Path.Combine(root, "含 空格"));
-            Check(command.StartsWith("\"C:\\含 空格\\Snapline.exe\" --data-dir \"") && command.EndsWith("含 空格\""),
+            string command = Startup.Command(@"C:\含 空格\Cardline.exe", Path.Combine(root, "含 空格"));
+            Check(command.StartsWith("\"C:\\含 空格\\Cardline.exe\" --data-dir \"") && command.EndsWith("含 空格\""),
                 "Optional startup command quotes executable and data paths containing spaces and Unicode");
-            Check(Startup.Command(@"C:\Snapline.exe", @"D:\").EndsWith("D:\\\\\""),
+            Check(Startup.Command(@"C:\Cardline.exe", @"D:\").EndsWith("D:\\\\\""),
                 "Startup command preserves a drive-root data directory through Windows argument escaping");
         }
 
@@ -395,7 +394,7 @@ namespace Snapline
             {
                 cancel.ThrowIfCancellationRequested();
                 Calls++;
-                Headers = request.Headers.UserAgent.ToString().StartsWith("Snapline/") && !request.Headers.Contains("Authorization");
+                Headers = request.Headers.UserAgent.ToString().StartsWith("Cardline/") && !request.Headers.Contains("Authorization");
                 return Task.FromResult(new HttpResponseMessage(Status) {
                     RequestMessage = request,
                     Content = new ByteArrayContent(request.RequestUri.Host == "raw.githubusercontent.com" ? Json : Package)
@@ -408,12 +407,12 @@ namespace Snapline
             string digest;
             using (var hash = SHA256.Create()) digest = BitConverter.ToString(hash.ComputeHash(package)).Replace("-", "").ToLowerInvariant();
             string asset = "{" +
-                "\"name\":\"Snapline-Windows-" + tag + ".zip\",\"state\":\"uploaded\",\"size\":" + package.Length +
+                "\"name\":\"Cardline-Windows-" + tag + ".zip\",\"state\":\"uploaded\",\"size\":" + package.Length +
                 ",\"digest\":\"sha256:" + digest + "\",\"browser_download_url\":\"" + Updates.Repository +
-                "/releases/download/" + tag + "/Snapline-Windows-" + tag + ".zip\"}";
+                "/releases/download/" + tag + "/Cardline-Windows-" + tag + ".zip\"}";
             return "{\"tag_name\":\"" + tag + "\",\"draft\":" + draft.ToString().ToLowerInvariant() +
                 ",\"prerelease\":" + prerelease.ToString().ToLowerInvariant() + ",\"body\":\"Update fixture\",\"assets\":[" + asset +
-                (includeInstaller ? "," + asset.Replace("Snapline-Windows-", "Snapline-Windows-Setup-").Replace(".zip", ".exe") : "") + "]}";
+                (includeInstaller ? "," + asset.Replace("Cardline-Windows-", "Cardline-Windows-Setup-").Replace(".zip", ".exe") : "") + "]}";
         }
 
         private static void CheckUpdates(string root, string output)
@@ -610,7 +609,7 @@ namespace Snapline
                         IntPtr handle = new WindowInteropHelper(dialog).Handle; SetForegroundWindow(handle); dialog.Notes.Focus(); Pump(80);
                         if (Native.GetForegroundWindow() != handle) throw new Exception("Escape probe did not target its own announcement window.");
                         TypeKey(0x1b);
-                        Check(!dialog.IsVisible, "The real Escape key closes the announcement without exiting Snapline");
+                        Check(!dialog.IsVisible, "The real Escape key closes the announcement without exiting Cardline");
                     });
                 DialogAction(controller, delegate(SettingsWindow settings) {
                     settings.ShowPage("About");
@@ -677,7 +676,7 @@ namespace Snapline
             {
                 using (var controller = new Controller(featureRoot, false, new Updates(new UpdateHandler { Json = Encoding.UTF8.GetBytes("[]") }),
                     delegate(string path, string arguments) { edits++; editor = path; editedFile = arguments; }))
-                using (var host = new Forms.Form { Text = "Snapline QA keyboard target", Bounds = new System.Drawing.Rectangle(100, 280, 500, 250), StartPosition = Forms.FormStartPosition.Manual, AutoScaleMode = Forms.AutoScaleMode.None })
+                using (var host = new Forms.Form { Text = "Cardline QA keyboard target", Bounds = new System.Drawing.Rectangle(100, 280, 500, 250), StartPosition = Forms.FormStartPosition.Manual, AutoScaleMode = Forms.AutoScaleMode.None })
                 using (var text = new Forms.TextBox { Dock = Forms.DockStyle.Fill, ImeMode = Forms.ImeMode.Disable })
                 {
                     host.Controls.Add(text); host.Show(); host.Activate(); text.Focus(); Pump(100);
@@ -771,7 +770,7 @@ namespace Snapline
             Directory.CreateDirectory(output);
             var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
             string root = Path.Combine(output, "data");
-            string stem = "Snapline 编辑验证 " + Guid.NewGuid().ToString("N").Substring(0, 8);
+            string stem = "Cardline 编辑验证 " + Guid.NewGuid().ToString("N").Substring(0, 8);
             string path = Path.Combine(output, stem + ".png");
             var before = Process.GetProcessesByName("mspaint").Select(process => process.Id).ToArray();
             Process paint = null;
@@ -786,7 +785,7 @@ namespace Snapline
                     controller.Busy = true;
                     var shot = controller.Store.AddFile(path, true);
                     Check(File.Exists(Controller.PaintPath()), "Real editing uses an existing installed Paint entry point");
-                    var card = new ShotCard(shot, controller, null);
+                    var card = new ShotCard(shot, controller);
                     card.ContextMenu.Items.OfType<MenuItem>().Single(item => (string)item.Header == "用画图编辑").RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
                     var deadline = DateTime.UtcNow.AddSeconds(15);
                     while (paint == null && DateTime.UtcNow < deadline)
@@ -1003,23 +1002,23 @@ namespace Snapline
         private static void CheckInstallerUpdates(string root, string output)
         {
             string registered = Path.Combine(root, "安装 目录");
-            Check(Updates.InstalledAt(Path.Combine(registered, "Snapline.exe"), registered.ToUpperInvariant()),
+            Check(Updates.InstalledAt(Path.Combine(registered, "Cardline.exe"), registered.ToUpperInvariant()),
                 "Installed update mode matches the registered executable path including Unicode and case differences");
-            Check(!Updates.InstalledAt(Path.Combine(registered + "-portable", "Snapline.exe"), registered),
+            Check(!Updates.InstalledAt(Path.Combine(registered + "-portable", "Cardline.exe"), registered),
                 "A separate portable copy stays in ZIP update mode even when another copy is installed");
-            Check(!Updates.InstalledAt(Path.Combine(registered, "Snapline.exe"), null) &&
-                !Updates.InstalledAt(Path.Combine(registered, "Snapline.exe"), "relative-directory"), "Missing or relative installation registration does not enable EXE update mode");
+            Check(!Updates.InstalledAt(Path.Combine(registered, "Cardline.exe"), null) &&
+                !Updates.InstalledAt(Path.Combine(registered, "Cardline.exe"), "relative-directory"), "Missing or relative installation registration does not enable EXE update mode");
             var package = Encoding.UTF8.GetBytes("MZ generated installer fixture; never executed");
             string both = "[" + ReleaseJson("v1.6.0", package, false, true, true) + "]";
             var json = Encoding.UTF8.GetBytes(both);
             var release = Updates.Parse(json, Updates.CurrentVersion, true);
-            Check(release != null && release.IsInstaller && release.Package.Name == "Snapline-Windows-Setup-v1.6.0.exe",
+            Check(release != null && release.IsInstaller && release.Package.Name == "Cardline-Windows-Setup-v1.6.0.exe",
                 "Installed clients select the EXE installer from a feed containing both update formats");
-            Check(Updates.Parse(json, new Version(1, 3, 2)).Package.Name == "Snapline-Windows-v1.6.0.zip",
+            Check(Updates.Parse(json, new Version(1, 3, 2)).Package.Name == "Cardline-Windows-v1.6.0.zip",
                 "Portable and legacy ZIP clients retain a compatible package in the same update feed");
             Check(Updates.Parse(Encoding.UTF8.GetBytes("[" + ReleaseJson("v1.6.0", package, false, true) + "]"), Updates.CurrentVersion, true) == null,
                 "Installed clients never silently substitute a ZIP when the verified installer is missing");
-            Check(Updates.Parse(Encoding.UTF8.GetBytes(both.Replace("/Snapline-Windows-Setup-v1.6.0.exe", "/other.exe")), Updates.CurrentVersion, true) == null,
+            Check(Updates.Parse(Encoding.UTF8.GetBytes(both.Replace("/Cardline-Windows-Setup-v1.6.0.exe", "/other.exe")), Updates.CurrentVersion, true) == null,
                 "Installer download URLs must match the exact release asset in the publishing repository");
             Check(Updates.Parse(Encoding.UTF8.GetBytes(both.Replace("sha256:", "sha1:")), Updates.CurrentVersion, true) == null,
                 "Installer assets without a complete SHA-256 digest are rejected");
@@ -1108,7 +1107,7 @@ namespace Snapline
                 Release release; byte[] feed;
                 using (var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20), MaxResponseContentBufferSize = 1024 * 1024 })
                 {
-                    http.DefaultRequestHeaders.UserAgent.ParseAdd("Snapline-QA/" + Updates.CurrentVersion);
+                    http.DefaultRequestHeaders.UserAgent.ParseAdd("Cardline-QA/" + Updates.CurrentVersion);
                     feed = http.GetByteArrayAsync(Updates.Feed).GetAwaiter().GetResult();
                     release = Updates.Parse(feed, new Version(0, 0, 0));
                 }
@@ -1768,7 +1767,7 @@ namespace Snapline
             controller.Store.Settings.UpdateCheckedUtcTicks = DateTime.UtcNow.Ticks;
             string runValue;
             using (var run = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run"))
-                runValue = run == null ? null : run.GetValue("Snapline") as string;
+                runValue = run == null ? null : run.GetValue("Cardline") as string;
             DialogAction(controller, delegate(SettingsWindow dialog) {
                 Check(dialog.Part<CheckBox>("StartupToggle").IsChecked == controller.StartupEnabled, "Settings reads actual startup state without enabling it");
                 var saveText = Descendants(dialog.Part<Button>("SaveSettings")).OfType<TextBlock>().First(block => block.Text == (string)dialog.Part<Button>("SaveSettings").Content);
@@ -1817,7 +1816,7 @@ namespace Snapline
             Check(controller.ApplyPreferences(originalClipboard, originalPaused, originalAutomatic, controller.Store.Settings.IncludeCursor, controller.Store.Settings.WatchFolder, controller.Sink.HotkeyKey, controller.Sink.HotkeyModifiers, out error),
                 "Settings can save normally after a write failure");
             using (var run = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run"))
-                Check((run == null ? null : run.GetValue("Snapline") as string) == runValue, "Opening, canceling and saving preferences leaves real startup entry untouched");
+                Check((run == null ? null : run.GetValue("Cardline") as string) == runValue, "Opening, canceling and saving preferences leaves real startup entry untouched");
             if (!checkToolbar) return;
             controller.Line.Reveal(Forms.Screen.FromPoint(Native.Cursor())); Pump(400);
             var latest = controller.Store.Items.Last();
@@ -1954,7 +1953,7 @@ namespace Snapline
         private static IntPtr AnnouncementHandle(Process process)
         {
             IntPtr window = IntPtr.Zero;
-            while ((window = FindWindowEx(IntPtr.Zero, window, null, "Snapline · 更新公告")) != IntPtr.Zero) {
+            while ((window = FindWindowEx(IntPtr.Zero, window, null, "Cardline · 更新公告")) != IntPtr.Zero) {
                 uint owner; GetWindowThreadProcessId(window, out owner);
                 if (owner == process.Id) return window;
             }
@@ -1963,7 +1962,7 @@ namespace Snapline
 
         private static void SmokeExecutable(string root)
         {
-            string executable = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Snapline.exe");
+            string executable = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cardline.exe");
             string dataRoot = Path.Combine(root, "executable-smoke");
             var settings = new ImageStore(dataRoot);
             settings.Settings.ListenClipboard = false; settings.Settings.AutoCheckUpdates = false;
@@ -1990,7 +1989,7 @@ namespace Snapline
                     }
                     uint thread = 0;
                     IntPtr messageWindow = IntPtr.Zero;
-                    while ((messageWindow = FindWindowEx(new IntPtr(-3), messageWindow, null, "Snapline messages")) != IntPtr.Zero)
+                    while ((messageWindow = FindWindowEx(new IntPtr(-3), messageWindow, null, "Cardline messages")) != IntPtr.Zero)
                     {
                         uint owner;
                         uint candidate = GetWindowThreadProcessId(messageWindow, out owner);
@@ -2008,7 +2007,7 @@ namespace Snapline
                     Check(!restarted.HasExited && AnnouncementHandle(restarted) == IntPtr.Zero && !AnnouncementWindow.Due(new ImageStore(dataRoot).Settings),
                         "The released EXE restarts without repeating an already-read version announcement");
                     uint thread = 0; IntPtr messageWindow = IntPtr.Zero;
-                    while ((messageWindow = FindWindowEx(new IntPtr(-3), messageWindow, null, "Snapline messages")) != IntPtr.Zero) {
+                    while ((messageWindow = FindWindowEx(new IntPtr(-3), messageWindow, null, "Cardline messages")) != IntPtr.Zero) {
                         uint owner; uint candidate = GetWindowThreadProcessId(messageWindow, out owner);
                         if (owner == restarted.Id) { thread = candidate; break; }
                     }
@@ -2029,7 +2028,7 @@ namespace Snapline
             using (var dc = visual.RenderOpen())
             {
                 dc.DrawRectangle(Ui.Brush("Paper"), null, new Rect(0, 0, width, height));
-                DrawText(dc, "Snapline", 32, Ui.Brush("Ink"), 60, 30);
+                DrawText(dc, "Cardline", 32, Ui.Brush("Ink"), 60, 30);
                 DrawText(dc, "Screenshots, within reach.  /  Windows v" + Updates.CurrentVersion, 14, Ui.Brush("Muted"), 62, 81);
                 dc.DrawRectangle(new VisualBrush(line) { Stretch = Stretch.Fill }, null, new Rect(34, 117, 1132, 320));
                 DrawText(dc, hotkey + "  /  Tendedero by Alejandro Buján · Unofficial Windows port", 12, Ui.Brush("Muted"), 62, 461);

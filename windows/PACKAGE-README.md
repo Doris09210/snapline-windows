@@ -1,22 +1,22 @@
-# Snapline Windows 软件包
+# Cardline Windows 软件包
 
-Snapline 是 [Tendedero](https://github.com/alejandrobujan/tendedero) 的非官方 Windows 实现。原项目作者为 **[Alejandro Buján](https://github.com/alejandrobujan)**，Windows 版由 [jiuyang5354](https://github.com/jiuyang5354) 发布。本版本使用独立名称和图标，不代表原作者背书。
+Cardline 是 [Tendedero](https://github.com/alejandrobujan/tendedero) 的非官方 Windows 实现。原项目作者为 **[Alejandro Buján](https://github.com/alejandrobujan)**，Windows 版由 [jiuyang5354](https://github.com/jiuyang5354) 发布。本版本使用独立名称和图标，不代表原作者背书。
 
-本 NuGet 包包含已发布的 Windows 便携程序，文件位于 `tools/Snapline/`。需要 **Windows 10 / 11 和 .NET Framework 4.8 或更高版本**。
+本 NuGet 包包含已发布的 Windows 便携程序，文件位于 `tools/Cardline/`。需要 **Windows 10 / 11 和 .NET Framework 4.8 或更高版本**。
 
 v1.5.1 Beta 2 对应软件包版本 `1.5.1-preview`，包含侧边暂存架、截图分组、统一 PDF / 文件工具、WebP 与离线转换组件。请完整保留 `Converters` 及其中许可文件，WebP 需要 64 位 Windows。本版为预发布测试版，实际验证范围随包保留。
 
 ## 下载和运行
 
-普通用户可直接从 [Releases](https://github.com/jiuyang5354/snapline-windows/releases) 下载 `Snapline-Windows-v版本号.zip`，解压整个文件夹并运行 `Snapline.exe`。
+普通用户可直接从 [Releases](https://github.com/jiuyang5354/snapline-windows/releases) 下载 `Cardline-Windows-v版本号.zip`，解压整个文件夹并运行 `Cardline.exe`。
 
 使用 GitHub Packages 时，需要先按 [GitHub 官方 NuGet 认证说明](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry) 配置账号及具有 `read:packages` 权限的令牌；公开的 NuGet 包也需要认证。不要把令牌提交到仓库或发给他人。
 
 ```powershell
-nuget install jiuyang5354.Snapline.Windows -Prerelease -OutputDirectory .\packages -Source https://nuget.pkg.github.com/jiuyang5354/index.json
+nuget install jiuyang5354.Cardline.Windows -Prerelease -OutputDirectory .\packages -Source https://nuget.pkg.github.com/jiuyang5354/index.json
 ```
 
-安装后，把 `packages/jiuyang5354.Snapline.Windows.版本号/tools/Snapline/` **整个文件夹**复制到自己的程序目录，再双击 `Snapline.exe`。也可把已下载的 `.nupkg` 当作 ZIP 解压，保留 `tools/Snapline/` 内全部文件。程序运行后驻留系统托盘。
+安装后，把 `packages/jiuyang5354.Cardline.Windows.版本号/tools/Cardline/` **整个文件夹**复制到自己的程序目录，再双击 `Cardline.exe`。也可把已下载的 `.nupkg` 当作 ZIP 解压，保留 `tools/Cardline/` 内全部文件。程序运行后驻留系统托盘。
 
 NuGet 负责分发文件；升级已运行的程序时，仍需从托盘退出旧版、换用新版完整文件夹。预发布 Release 对应的 NuGet 版本带 `-preview` 后缀。
 
@@ -24,9 +24,9 @@ NuGet 负责分发文件；升级已运行的程序时，仍需从托盘退出�
 
 - 显示 / 隐藏默认 `Ctrl + Alt + T`，区域截图默认 `Ctrl + Alt + S`；托盘 →“设置快捷键…”可分别自定义，两组按键保存后立即生效，重启后保留。
 - 默认收集剪贴板图片。托盘可关闭收集、暂停全部自动收集，或快速复制最近一张；开机启动默认关闭。
-- 图片和设置保存在 `%LOCALAPPDATA%\Snapline`。不上传图片、剪贴板内容或本地路径。
+- 图片和设置保存在 `%LOCALAPPDATA%\Cardline`。不上传图片、剪贴板内容或本地路径。
 - 自动更新提供检查、提醒及校验下载；安装更新需手动退出旧版并解压运行。更新检查和下载访问本仓库的 GitHub 文件。
-- 程序尚未代码签名，Windows 可能提示未知发布者。预发布的验证范围及人工检查项见包内 `tools/Snapline/QA.md`，完整操作见 `README.zh-CN.md`。
+- 程序尚未代码签名，Windows 可能提示未知发布者。预发布的验证范围及人工检查项见包内 `tools/Cardline/QA.md`，完整操作见 `README.zh-CN.md`。
 
 ## 许可与来源
 

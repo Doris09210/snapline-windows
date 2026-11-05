@@ -24,7 +24,7 @@ internal static class ClipboardNativeProbe
     {
         try {
             var assembly = Assembly.LoadFrom(args[0]);
-            var native = assembly.GetType("Snapline.Native").GetMethod("ClipboardFormats", BindingFlags.Static | BindingFlags.NonPublic);
+            var native = assembly.GetType("Cardline.Native").GetMethod("ClipboardFormats", BindingFlags.Static | BindingFlags.NonPublic);
             uint sequence = GetClipboardSequenceNumber();
             var formats = (string[])native.Invoke(null, null);
             Check(formats.All(name => !string.IsNullOrEmpty(name)), "Native clipboard enumeration returns resolved format names");

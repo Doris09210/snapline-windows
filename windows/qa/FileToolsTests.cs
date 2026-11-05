@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class FileToolsTests
     {
@@ -244,7 +244,7 @@ namespace Snapline
             string folder = Path.Combine(demo, "素材文件夹"); Directory.CreateDirectory(folder);
             File.WriteAllText(Path.Combine(folder, "说明.txt"), "这是独立预览生成的演示文件，可自由测试。", System.Text.Encoding.UTF8);
             var app = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose }; Ui.Initialize();
-            var host = new Window { Title = "Snapline · 批量工具独立预览", Width = 620, Height = 420,
+            var host = new Window { Title = "Cardline · 批量工具独立预览", Width = 620, Height = 420,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen, ResizeMode = ResizeMode.NoResize, Background = Ui.Brush("Paper"), FontFamily = Ui.Font };
             var panel = new StackPanel { Margin = new Thickness(28) };
             panel.Children.Add(Ui.Text("文件批量工具", 26, false));

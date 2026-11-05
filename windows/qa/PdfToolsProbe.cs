@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using PdfSharp.Pdf.IO;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class PdfToolsPreview
     {

@@ -7,27 +7,27 @@ using System.Text;
 using System.Threading;
 using System.Windows;
 
-[assembly: AssemblyTitle("Snapline")]
-[assembly: AssemblyDescription("Screenshots on a line · Windows")]
+[assembly: AssemblyTitle("Cardline")]
+[assembly: AssemblyDescription("Screenshot cards on a line · Windows")]
 [assembly: AssemblyVersion("1.5.1.0")]
 [assembly: AssemblyInformationalVersion("1.5.1-beta.2")]
 [assembly: TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
 
-namespace Snapline
+namespace Cardline
 {
     internal static class Program
     {
         [STAThread]
         private static void Main(string[] args)
         {
-            string root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Snapline");
+            string root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Cardline");
             if (args.Length == 2 && args[0] == "--data-dir") root = Path.GetFullPath(args[1]);
-            else if (args.Length != 0) { MessageBox.Show("用法：Snapline.exe [--data-dir 文件夹]", "Snapline"); return; }
+            else if (args.Length != 0) { MessageBox.Show("用法：Cardline.exe [--data-dir 文件夹]", "Cardline"); return; }
             string key;
             using (var hash = SHA256.Create()) key = BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(root.ToUpperInvariant()))).Replace("-", "").Substring(0, 20);
             bool first;
-            using (var mutex = new Mutex(true, "Local\\Snapline-" + key, out first))
-            using (var request = new EventWaitHandle(false, EventResetMode.AutoReset, "Local\\Snapline-Show-" + key))
+            using (var mutex = new Mutex(true, "Local\\Cardline-" + key, out first))
+            using (var request = new EventWaitHandle(false, EventResetMode.AutoReset, "Local\\Cardline-Show-" + key))
             {
                 if (!first) { request.Set(); return; }
                 var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
@@ -53,8 +53,8 @@ namespace Snapline
                 }
                 catch (Exception ex) {
                     string log = StartupDiagnostics.Write(root, ex);
-                    MessageBox.Show((running ? "Snapline 运行出错：\n" : "无法启动 Snapline：\n") + ex.Message +
-                        (log == null ? "" : "\n\n错误记录已保存，请反馈此文件：\n" + log), "Snapline", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show((running ? "Cardline 运行出错：\n" : "无法启动 Cardline：\n") + ex.Message +
+                        (log == null ? "" : "\n\n错误记录已保存，请反馈此文件：\n" + log), "Cardline", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 finally { mutex.ReleaseMutex(); }
             }

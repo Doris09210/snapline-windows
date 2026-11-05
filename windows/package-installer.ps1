@@ -7,10 +7,10 @@ param(
 $ErrorActionPreference = 'Stop'
 & (Join-Path $PSScriptRoot 'restore-converters.ps1')
 if ([string]::IsNullOrWhiteSpace($PortableZip)) {
-    $builtExecutable = Join-Path $PSScriptRoot 'bin\Snapline.exe'
-    if (-not (Test-Path -LiteralPath $builtExecutable)) { throw 'Build Snapline first, or pass -PortableZip and -ChecksumFile explicitly.' }
+    $builtExecutable = Join-Path $PSScriptRoot 'bin\Cardline.exe'
+    if (-not (Test-Path -LiteralPath $builtExecutable)) { throw 'Build Cardline first, or pass -PortableZip and -ChecksumFile explicitly.' }
     $builtVersion = [Reflection.AssemblyName]::GetAssemblyName($builtExecutable).Version.ToString(3)
-    $PortableZip = Join-Path $PSScriptRoot ('Snapline-Windows-v' + $builtVersion + '.zip')
+    $PortableZip = Join-Path $PSScriptRoot ('Cardline-Windows-v' + $builtVersion + '.zip')
 }
 if (-not (Test-Path -LiteralPath $NsisPath)) { throw 'Download NSIS 3.13 from https://nsis.sourceforge.io/Download or pass -NsisPath.' }
 $portableName = [System.IO.Path]::GetFileName($PortableZip)
@@ -22,11 +22,11 @@ $stageRoot = Join-Path $PSScriptRoot 'dist\installer'
 $payloadParent = Join-Path $stageRoot 'payload'
 New-Item -ItemType Directory -Force -Path $payloadParent | Out-Null
 Expand-Archive -LiteralPath $PortableZip -DestinationPath $payloadParent -Force
-$payload = Join-Path $payloadParent 'Snapline'
-$appVersion = [System.Reflection.AssemblyName]::GetAssemblyName((Join-Path $payload 'Snapline.exe')).Version.ToString(3)
-$outputFile = Join-Path $stageRoot ('Snapline-Windows-Setup-v' + $appVersion + '.exe')
+$payload = Join-Path $payloadParent 'Cardline'
+$appVersion = [System.Reflection.AssemblyName]::GetAssemblyName((Join-Path $payload 'Cardline.exe')).Version.ToString(3)
+$outputFile = Join-Path $stageRoot ('Cardline-Windows-Setup-v' + $appVersion + '.exe')
 $compilerArguments = @('/V2', '/WX', '/INPUTCHARSET', 'UTF8', ('/DAPP_VERSION=' + $appVersion), ('/DPAYLOAD_DIR=' + $payload),
-    ('/DAPP_ICON=' + (Join-Path $PSScriptRoot 'Snapline.ico')),
+    ('/DAPP_ICON=' + (Join-Path $PSScriptRoot 'Cardline.ico')),
     ('/DINSTALLER_README=' + (Join-Path $PSScriptRoot 'INSTALLER.zh-CN.md')))
 & $NsisPath @compilerArguments ('/DOUTPUT_FILE=' + $outputFile) (Join-Path $PSScriptRoot 'installer.nsi')
 if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed.' }
@@ -35,12 +35,12 @@ $setupHash = (Get-FileHash -LiteralPath $outputFile -Algorithm SHA256).Hash.ToLo
 if ($Test) {
     $qaRoot = Join-Path $PSScriptRoot 'qa\output\installer'
     New-Item -ItemType Directory -Force -Path $qaRoot | Out-Null
-    $qaSetup = Join-Path $qaRoot 'Snapline-Setup-QA.exe'
+    $qaSetup = Join-Path $qaRoot 'Cardline-Setup-QA.exe'
     & $NsisPath @compilerArguments ('/DOUTPUT_FILE=' + $qaSetup) ('/DQA_ROOT=' + $qaRoot) (Join-Path $PSScriptRoot 'installer.nsi')
     if ($LASTEXITCODE -ne 0) { throw 'QA installer compilation failed.' }
     & (Join-Path $PSScriptRoot 'qa\InstallerTests.ps1') -Installer $qaSetup -ProductionInstaller $outputFile -Payload $payload -Root $qaRoot
 }
-$sourceRoot = Join-Path $stageRoot 'Snapline-Windows-Installer-Source'
+$sourceRoot = Join-Path $stageRoot 'Cardline-Windows-Installer-Source'
 $absoluteStage = [System.IO.Path]::GetFullPath($stageRoot)
 $absoluteSource = [System.IO.Path]::GetFullPath($sourceRoot)
 if (-not $absoluteSource.StartsWith($absoluteStage + '\', [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Installer source staging escaped dist.' }
@@ -50,7 +50,7 @@ foreach ($name in @('README.md', 'LICENSE', 'UPSTREAM-LICENSE.txt', 'NOTICE.md')
     Copy-Item -LiteralPath (Join-Path (Split-Path $PSScriptRoot -Parent) $name) -Destination $sourceRoot
 }
 Copy-Item -LiteralPath $ChecksumFile -Destination (Join-Path $sourceRoot 'SHA256SUMS.txt')
-foreach ($name in @('installer.nsi', 'package-installer.ps1', 'restore-converters.ps1', 'conversion-dependencies.lock.json', 'INSTALLER.zh-CN.md', 'Snapline.ico')) {
+foreach ($name in @('installer.nsi', 'package-installer.ps1', 'restore-converters.ps1', 'conversion-dependencies.lock.json', 'INSTALLER.zh-CN.md', 'Cardline.ico')) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot $name) -Destination (Join-Path $sourceRoot 'windows')
 }
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'qa\InstallerTests.ps1') -Destination (Join-Path $sourceRoot 'windows\qa')
@@ -63,7 +63,7 @@ if (Test-Path -LiteralPath $qaReport) {
         Copy-Item -LiteralPath $qaReport -Destination (Join-Path $sourceRoot 'windows\qa\installer-results.json')
     }
 }
-$sourceZip = Join-Path $stageRoot ('Snapline-Windows-Installer-Source-v' + $appVersion + '.zip')
+$sourceZip = Join-Path $stageRoot ('Cardline-Windows-Installer-Source-v' + $appVersion + '.zip')
 Compress-Archive -LiteralPath $sourceRoot -DestinationPath $sourceZip -Force
 $sourceHash = (Get-FileHash -LiteralPath $sourceZip -Algorithm SHA256).Hash.ToLowerInvariant()
 [System.IO.File]::WriteAllText((Join-Path $stageRoot 'SHA256SUMS-Setup.txt'),
@@ -76,7 +76,7 @@ if (Test-Path -LiteralPath $feedPath) {
     $installerName = [System.IO.Path]::GetFileName($outputFile)
     $feed[0].assets = @($feed[0].assets | Where-Object { $_.name -ne $installerName }) + @([ordered]@{
         name=$installerName; state='uploaded'; size=(Get-Item -LiteralPath $outputFile).Length; digest=('sha256:' + $setupHash)
-        browser_download_url=('https://github.com/jiuyang5354/snapline-windows/releases/download/v' + $appVersion + '/' + $installerName)
+        browser_download_url=('https://github.com/Doris09210/snapline-windows/releases/download/v' + $appVersion + '/' + $installerName)
     })
     [System.IO.File]::WriteAllText($feedPath, (ConvertTo-Json -InputObject $feed -Depth 5).Replace("`r`n", "`n") + "`n", $utf8)
     Write-Output 'Update feed includes verified ZIP and EXE assets; publish only after both are uploaded and checked.'

@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class ToolsDesignProbe
     {
@@ -46,8 +46,8 @@ namespace Snapline
                 window.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(window), 0, Key.Down) { RoutedEvent = Keyboard.PreviewKeyDownEvent });
                 window.ToolList.SelectedIndex = 0; Pump(35); Check(!indicator.RenderTransform.HasAnimatedProperties, "Keyboard navigation applies its selected state without waiting for motion");
                 Check(window.FilesGrid.Items.Count == 1 && window.FilesGrid.Items.Cast<FileToolRow>().All(row => FileBatch.IsInputImage(row.Path)), "Image mode restores only image rows from the preserved source list");
-                ToolDesign.Theme(true); Pump(30); Check(ToolDesign.Brush("Paper").ToString() == "#FF1B1E1B", "Dark mode updates existing native surfaces without recreating the window");
-                ToolDesign.Theme(false); Pump(30); Check(ToolDesign.Brush("Paper").ToString() == "#FFF6F6F3", "Light mode restores the original surface colors");
+                ToolDesign.Theme(true); Pump(30); Check(ToolDesign.Brush("Paper").ToString() == "#FF" + Palette.Hex(Palette.Current, true, "Paper").TrimStart('#'), "Dark mode updates existing native surfaces without recreating the window");
+                ToolDesign.Theme(false); Pump(30); Check(ToolDesign.Brush("Paper").ToString() == "#FF" + Palette.Hex(Palette.Current, false, "Paper").TrimStart('#'), "Light mode restores the original surface colors");
                 window.Width = window.MinWidth; window.Height = window.MinHeight; Pump(70);
                 Check(window.ExecuteButton.TranslatePoint(new Point(window.ExecuteButton.ActualWidth, window.ExecuteButton.ActualHeight), window).X <= window.ActualWidth, "The main action stays inside the smallest supported window");
                 Check(Visual(window).OfType<TextBox>().Where(input => input.IsVisible).All(input => input.TranslatePoint(new Point(input.ActualWidth, 0), window).X <= window.ActualWidth + 1), "Visible PDF fields do not overflow the narrow window horizontally");

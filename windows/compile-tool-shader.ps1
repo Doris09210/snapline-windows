@@ -3,7 +3,7 @@ Add-Type -TypeDefinition @'
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-public static class SnaplineToolShaderCompiler {
+public static class CardlineToolShaderCompiler {
  [ComImport, Guid("8BA5FB08-5195-40e2-AC58-0D989C3A0102"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
  private interface IBlob { [PreserveSig] IntPtr GetBufferPointer(); [PreserveSig] UIntPtr GetBufferSize(); }
  [DllImport("d3dcompiler_47.dll", CharSet=CharSet.Ansi, ExactSpelling=true)]
@@ -19,4 +19,4 @@ public static class SnaplineToolShaderCompiler {
 }
 '@
 $ui = Join-Path $PSScriptRoot 'ui'
-[SnaplineToolShaderCompiler]::Compile((Join-Path $ui 'ToolSheen.hlsl'), (Join-Path $ui 'ToolSheen.ps'))
+[CardlineToolShaderCompiler]::Compile((Join-Path $ui 'ToolSheen.hlsl'), (Join-Path $ui 'ToolSheen.ps'))

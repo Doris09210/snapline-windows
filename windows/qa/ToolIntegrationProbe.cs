@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class ToolIntegrationProbe
     {
@@ -37,10 +37,10 @@ namespace Snapline
                         if (stage == 0) {
                             var files = window as FileToolsWindow; if (files == null || files.Tool != FileTool.Convert) return;
                             Check(controller.Busy && !controller.Files.Window.IsVisible, "The production controller keeps the shelf hidden throughout the tool session");
-                            Check(ToolDesign.Brush("Paper").ToString() == "#FF1B1E1B", "The tool session follows the saved application appearance");
+                            Check(ToolDesign.Brush("Paper").ToString() == "#FF" + Palette.Hex(Palette.Current, true, "Paper").TrimStart('#'), "The tool session follows the saved application appearance");
                             var theme = Visual(files).OfType<Button>().Single(button => button.Tag as string == "ThemeToggle"); theme.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                             Check(new ImageStore(root).Settings.Appearance == "Light", "The tool appearance switch saves to the actual settings store");
-                            Check(ReferenceEquals(Ui.Brush("Paper"), originalPaper) && originalPaper.ToString() == originalColor, "Tool theme resources do not change the existing screenshot-line palette");
+                            Check(Ui.Brush("Paper").ToString() == "#FF" + Palette.Hex(Palette.Current, false, "Paper").TrimStart('#') && originalPaper.ToString() == originalColor, "The screenshot-line palette follows the appearance saved from the tool window while old brushes stay frozen");
                             stage = 1; ToolDesign.Navigate(window, "rename");
                         } else if (stage == 1) {
                             var files = window as FileToolsWindow; if (files == null || files.Tool != FileTool.Rename) return;

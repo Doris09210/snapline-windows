@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class StartupDiagnostics
     {
@@ -35,7 +35,7 @@ namespace Snapline
             try
             {
                 var report = new StringBuilder();
-                report.AppendLine("Snapline diagnostics " + DateTimeOffset.Now.ToString("O"));
+                report.AppendLine("Cardline diagnostics " + DateTimeOffset.Now.ToString("O"));
                 var assembly = Assembly.GetExecutingAssembly();
                 var version = (AssemblyInformationalVersionAttribute)Attribute.GetCustomAttribute(assembly, typeof(AssemblyInformationalVersionAttribute));
                 report.AppendLine("Version: " + (version == null ? assembly.GetName().Version.ToString() : version.InformationalVersion));

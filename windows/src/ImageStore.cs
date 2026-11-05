@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Snapline
+namespace Cardline
 {
     [DataContract]
     internal sealed class Settings
@@ -24,6 +24,7 @@ namespace Snapline
         [DataMember] public bool CollectionPaused;
         [DataMember] public bool ShowOnCapture = true;
         [DataMember] public string Appearance;
+        [DataMember] public string Theme;
         [DataMember] public bool RemoveOnBlankDrop = true;
         [DataMember] public uint ClearHotkeyKey = Hotkey.DefaultClearKey;
         [DataMember] public uint ClearHotkeyModifiers = Hotkey.DefaultModifiers;

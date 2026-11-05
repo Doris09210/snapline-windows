@@ -2,8 +2,8 @@
 $ErrorActionPreference = 'Stop'
 $projectRoot = $PSScriptRoot
 $distributionRoot = Join-Path $projectRoot 'dist'
-$portableRoot = Join-Path $distributionRoot 'Snapline'
-$sourceRoot = Join-Path $distributionRoot 'Snapline-Windows-Source'
+$portableRoot = Join-Path $distributionRoot 'Cardline'
+$sourceRoot = Join-Path $distributionRoot 'Cardline-Windows-Source'
 foreach ($stageRoot in @($portableRoot, $sourceRoot)) {
     $absoluteStage = [System.IO.Path]::GetFullPath($stageRoot)
     $absoluteDistribution = [System.IO.Path]::GetFullPath($distributionRoot)
@@ -11,7 +11,7 @@ foreach ($stageRoot in @($portableRoot, $sourceRoot)) {
     if (Test-Path -LiteralPath $absoluteStage) { Remove-Item -LiteralPath $absoluteStage -Recurse -Force }
 }
 New-Item -ItemType Directory -Force -Path $portableRoot, (Join-Path $sourceRoot 'windows') | Out-Null
-$releaseFiles = @('Snapline.exe', 'Snapline.exe.config', 'README.zh-CN.md', 'LICENSE', 'UPSTREAM-LICENSE.txt', 'NOTICE.md')
+$releaseFiles = @('Cardline.exe', 'Cardline.exe.config', 'README.zh-CN.md', 'LICENSE', 'UPSTREAM-LICENSE.txt', 'NOTICE.md')
 foreach ($name in $releaseFiles) {
     Copy-Item -LiteralPath (Join-Path $projectRoot ('bin\' + $name)) -Destination (Join-Path $portableRoot $name)
 }
@@ -19,7 +19,7 @@ Copy-Item -LiteralPath (Join-Path (Split-Path $projectRoot -Parent) 'docs\previe
 Copy-Item -LiteralPath (Join-Path $projectRoot 'QA.md') -Destination (Join-Path $portableRoot 'QA.md')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'PDF-TOOLS-PLAN.zh-CN.md') -Destination (Join-Path $portableRoot 'PDF-TOOLS-PLAN.zh-CN.md')
 & (Join-Path $projectRoot 'restore-converters.ps1') -Destination (Join-Path $portableRoot 'Converters')
-$sourceFiles = @('.gitignore', 'build.ps1', 'package.ps1', 'make-icon.ps1', 'compile-tool-shader.ps1', 'app.manifest', 'Snapline.exe.config', 'Snapline.ico', 'README.zh-CN.md', 'QA.md', 'ANNOUNCEMENT.zh-CN.txt', 'restore-converters.ps1', 'conversion-dependencies.lock.json', 'PDF-TOOLS-PLAN.zh-CN.md')
+$sourceFiles = @('.gitignore', 'build.ps1', 'package.ps1', 'make-icon.ps1', 'compile-tool-shader.ps1', 'app.manifest', 'Cardline.exe.config', 'Cardline.ico', 'README.zh-CN.md', 'QA.md', 'ANNOUNCEMENT.zh-CN.txt', 'restore-converters.ps1', 'conversion-dependencies.lock.json', 'PDF-TOOLS-PLAN.zh-CN.md')
 foreach ($name in $sourceFiles) {
     Copy-Item -LiteralPath (Join-Path $projectRoot $name) -Destination (Join-Path $sourceRoot ('windows\' + $name))
 }
@@ -52,9 +52,9 @@ New-Item -ItemType Directory -Force -Path (Join-Path $sourceRoot 'docs') | Out-N
 foreach ($previewFile in @('preview.png', 'settings.png', 'capture.png')) {
     Copy-Item -LiteralPath (Join-Path (Split-Path $projectRoot -Parent) ('docs\' + $previewFile)) -Destination (Join-Path $sourceRoot ('docs\' + $previewFile))
 }
-$releaseTag = 'v' + [System.Reflection.AssemblyName]::GetAssemblyName((Join-Path $projectRoot 'bin\Snapline.exe')).Version.ToString(3)
-$portableZip = Join-Path $projectRoot ('Snapline-Windows-' + $releaseTag + '.zip')
-$sourceZip = Join-Path $projectRoot ('Snapline-Windows-Source-' + $releaseTag + '.zip')
+$releaseTag = 'v' + [System.Reflection.AssemblyName]::GetAssemblyName((Join-Path $projectRoot 'bin\Cardline.exe')).Version.ToString(3)
+$portableZip = Join-Path $projectRoot ('Cardline-Windows-' + $releaseTag + '.zip')
+$sourceZip = Join-Path $projectRoot ('Cardline-Windows-Source-' + $releaseTag + '.zip')
 Compress-Archive -LiteralPath $portableRoot -DestinationPath $portableZip -Force
 Compress-Archive -LiteralPath $sourceRoot -DestinationPath $sourceZip -Force
 $repositoryRoot = Split-Path $projectRoot -Parent
@@ -65,7 +65,7 @@ $checksumPath = if ($SkipPublicChecksumUpdate) { Join-Path $distributionRoot 'SH
 [System.IO.File]::WriteAllText($checksumPath,
     $portableHash + '  ' + [System.IO.Path]::GetFileName($portableZip) + "`n" + $sourceHash + '  ' + [System.IO.Path]::GetFileName($sourceZip) + "`n", $utf8)
 $releaseNotes = [System.IO.File]::ReadAllText((Join-Path $repositoryRoot 'CHANGELOG.md'))
-$noteHeaders = [regex]::Matches($releaseNotes, '(?m)^# Snapline ')
+$noteHeaders = [regex]::Matches($releaseNotes, '(?m)^# Cardline ')
 if ($noteHeaders.Count -gt 1) { $releaseNotes = $releaseNotes.Substring(0, $noteHeaders[1].Index).Trim() }
 $updateFeed = @([ordered]@{
     tag_name = $releaseTag; draft = $false; prerelease = $true
@@ -73,7 +73,7 @@ $updateFeed = @([ordered]@{
     assets = @([ordered]@{
         name = [System.IO.Path]::GetFileName($portableZip); state = 'uploaded'; size = (Get-Item -LiteralPath $portableZip).Length
         digest = 'sha256:' + $portableHash
-        browser_download_url = 'https://github.com/jiuyang5354/snapline-windows/releases/download/' + $releaseTag + '/' + [System.IO.Path]::GetFileName($portableZip)
+        browser_download_url = 'https://github.com/Doris09210/snapline-windows/releases/download/' + $releaseTag + '/' + [System.IO.Path]::GetFileName($portableZip)
     })
 })
 [System.IO.File]::WriteAllText((Join-Path $distributionRoot 'update.json'), (ConvertTo-Json -InputObject $updateFeed -Depth 5).Replace("`r`n", "`n") + "`n", $utf8)

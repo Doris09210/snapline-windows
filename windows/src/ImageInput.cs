@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Media.Imaging;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class ImageInput : IDisposable
     {

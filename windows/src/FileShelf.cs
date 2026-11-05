@@ -3,9 +3,9 @@ using System.IO;
 using System.Windows.Interop;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
-    // Dropline's shelf shares Snapline's data root, settings, tray and application lifetime.
+    // Dropline's shelf shares Cardline's data root, settings, tray and application lifetime.
     internal sealed class FileShelf : IDisposable
     {
         internal readonly Dropline.ShelfStore Store;

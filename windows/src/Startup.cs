@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using Microsoft.Win32;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class Startup
     {
         private const string Key = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        private const string Name = "Snapline";
+        private const string Name = "Cardline";
 
         internal static string Command(string executable, string root)
         {

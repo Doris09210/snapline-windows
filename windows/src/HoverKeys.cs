@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class HoverKeys : IDisposable
     {

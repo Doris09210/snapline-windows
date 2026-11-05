@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class UpdateDialog : Forms.Form
     {
@@ -23,7 +23,7 @@ namespace Snapline
         internal UpdateDialog(Release release, Func<string, IProgress<int>, CancellationToken, Task> transfer, Action<string> open, Action<string> install)
         {
             this.release = release; this.transfer = transfer; this.open = open; this.install = install;
-            Text = "Snapline · 发现新版本";
+            Text = "Cardline · 发现新版本";
             Font = new Font("Microsoft YaHei UI", 9F);
             AutoScaleMode = Forms.AutoScaleMode.Dpi;
             ClientSize = new Size(540, 390);

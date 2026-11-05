@@ -10,7 +10,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class PdfToolsWindow : Window
     {
@@ -52,7 +52,7 @@ namespace Snapline
         internal PdfToolsWindow(string[] paths, string output, Action<string[]> addOutputs, Action<string> openFolder)
         {
             Ui.Initialize(); ToolDesign.Initialize(); this.addOutputs = addOutputs; this.openFolder = openFolder;
-            Title = "Snapline · PDF 工具箱"; Width = Math.Min(1040, SystemParameters.WorkArea.Width - 24); Height = Math.Min(740, SystemParameters.WorkArea.Height - 24);
+            Title = "Cardline · PDF 工具箱"; Width = Math.Min(1040, SystemParameters.WorkArea.Width - 24); Height = Math.Min(740, SystemParameters.WorkArea.Height - 24);
             MinWidth = Math.Min(740, Width); MinHeight = Math.Min(540, Height); Background = ToolDesign.Brush("Paper"); FontFamily = Ui.Font;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             var root = new Grid { Margin = new Thickness(24) };

@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class SettingsFeedbackTests
     {
@@ -45,7 +45,7 @@ namespace Snapline
             window.Part<CheckBox>("StartupToggle").IsEnabled = false;
             window.Part<CheckBox>("StartupToggle").ToolTip = "预览不修改电脑的开机启动。";
             window.Part<Button>("OpenShelf").IsEnabled = false;
-            window.Part<Button>("OpenShelf").ToolTip = "请使用已安装的 Snapline 暂存架；此窗口用于查看设置设计。";
+            window.Part<Button>("OpenShelf").ToolTip = "请使用已安装的 Cardline 暂存架；此窗口用于查看设置设计。";
         }
         [DllImport("user32.dll")] private static extern IntPtr SendMessage(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
         private static uint FreeKey(uint modifiers)
@@ -75,7 +75,7 @@ namespace Snapline
             var preferred = (MemoryStream)data.GetData("Preferred DropEffect", false);
             Check(BitConverter.ToInt32(preferred.ToArray(), 0) == 1 && data.GetDataPresent(DataFormats.FileDrop) && data.GetDataPresent("PNG"),
                 "Drag payload prefers Copy and offers both image and file formats");
-            var card = new ShotCard(shot, controller, null);
+            var card = new ShotCard(shot, controller);
             controller.Store.Settings.RemoveOnBlankDrop = false;
             card.CompleteDrag(DragDropEffects.None, true, false, false);
             Check(controller.Store.Items.Contains(shot), "Disabling blank-drop removal preserves the card");
@@ -284,7 +284,7 @@ namespace Snapline
                 var constructClock = Stopwatch.StartNew();
                 window = new SettingsWindow(controller, delegate { return true; }); ProtectPreview(window);
                 double constructed = constructClock.Elapsed.TotalMilliseconds;
-                window.Title = "Snapline · 设置设计预览";
+                window.Title = "Cardline · 设置设计预览";
                 if (!qa) { window.ShowDialog(); return 0; }
                 output = Path.GetFullPath(output); Directory.CreateDirectory(output);
                 var clock = Stopwatch.StartNew(); double painted = -1;

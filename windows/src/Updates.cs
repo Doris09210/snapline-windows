@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 
-namespace Snapline
+namespace Cardline
 {
     [DataContract]
     internal sealed class Release
@@ -22,7 +22,7 @@ namespace Snapline
         [DataMember(Name = "assets")] public ReleaseAsset[] Assets { get; set; }
         internal Version Version;
         internal ReleaseAsset Package;
-        internal bool IsInstaller { get { return Package.Name == "Snapline-Windows-Setup-" + Tag + ".exe"; } }
+        internal bool IsInstaller { get { return Package.Name == "Cardline-Windows-Setup-" + Tag + ".exe"; } }
         internal string Page { get { return Updates.Repository + "/releases/tag/" + Tag; } }
     }
 
@@ -38,8 +38,8 @@ namespace Snapline
 
     internal sealed class Updates : IDisposable
     {
-        internal const string Repository = "https://github.com/jiuyang5354/snapline-windows";
-        internal const string Feed = "https://raw.githubusercontent.com/jiuyang5354/snapline-windows/main/update.json";
+        internal const string Repository = "https://github.com/Doris09210/snapline-windows";
+        internal const string Feed = "https://raw.githubusercontent.com/Doris09210/snapline-windows/main/update.json";
         private const int MaxPackageBytes = 20 * 1024 * 1024;
         private readonly HttpClient client;
         private readonly bool installed;
@@ -48,12 +48,12 @@ namespace Snapline
         }
 
         internal Updates() : this(new HttpClientHandler(), InstalledAt(System.Windows.Forms.Application.ExecutablePath,
-            Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\Snapline", "InstallLocation", null) as string)) { }
+            Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\Cardline", "InstallLocation", null) as string)) { }
         internal Updates(HttpMessageHandler handler, bool installed = false)
         {
             this.installed = installed;
             client = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan, MaxResponseContentBufferSize = MaxPackageBytes };
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Snapline/" + CurrentVersion);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Cardline/" + CurrentVersion);
             client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
         }
 
@@ -67,7 +67,7 @@ namespace Snapline
         {
             if (string.IsNullOrWhiteSpace(executable) || string.IsNullOrWhiteSpace(location) ||
                 !Path.IsPathRooted(executable) || !Path.IsPathRooted(location)) return false;
-            try { return string.Equals(Path.GetFullPath(executable), Path.GetFullPath(Path.Combine(location, "Snapline.exe")), StringComparison.OrdinalIgnoreCase); }
+            try { return string.Equals(Path.GetFullPath(executable), Path.GetFullPath(Path.Combine(location, "Cardline.exe")), StringComparison.OrdinalIgnoreCase); }
             catch (ArgumentException) { return false; }
             catch (NotSupportedException) { return false; }
         }
@@ -84,7 +84,7 @@ namespace Snapline
                 if (release == null || release.Draft || release.Tag == null || !release.Tag.StartsWith("v", StringComparison.Ordinal) ||
                     !Version.TryParse(release.Tag.Substring(1), out version) || version.Build < 0 || version.Revision >= 0 ||
                     release.Tag != "v" + version.ToString(3) || version <= current || release.Assets == null) continue;
-                string name = (installed ? "Snapline-Windows-Setup-" : "Snapline-Windows-") + release.Tag + (installed ? ".exe" : ".zip");
+                string name = (installed ? "Cardline-Windows-Setup-" : "Cardline-Windows-") + release.Tag + (installed ? ".exe" : ".zip");
                 foreach (var asset in release.Assets)
                     if (asset != null && asset.Name == name && asset.State == "uploaded" && asset.Size > 0 && asset.Size <= MaxPackageBytes &&
                         asset.Url == Repository + "/releases/download/" + release.Tag + "/" + name && asset.Digest != null &&

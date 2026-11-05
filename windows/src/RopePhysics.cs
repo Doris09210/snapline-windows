@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 
-namespace Snapline
+namespace Cardline
 {
     // A damped string, displaced from the existing resting curve. Endpoints stay pinned.
     internal sealed class RopePhysics

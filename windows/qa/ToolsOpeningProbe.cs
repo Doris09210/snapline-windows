@@ -5,7 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class ToolsOpeningProbe
     {

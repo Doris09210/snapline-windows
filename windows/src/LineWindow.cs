@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class LineWindow : Window
     {
@@ -26,7 +26,6 @@ namespace Snapline
         internal TextBlock StatusText, HotkeyText;
         private TextBlock pauseLabel, pauseGlyph, countText;
         private Ellipse statusDot;
-        private GlassBackdrop backdrop;
         private readonly RopePhysics ropePhysics = new RopePhysics();
         private readonly Stopwatch ropeClock = new Stopwatch();
         private PointCollection ropePoints;
@@ -51,7 +50,7 @@ namespace Snapline
         {
             Ui.Initialize();
             this.controller = controller;
-            Title = "Snapline — 截图晾衣绳";
+            Title = "Cardline — 截图晾衣绳";
             WindowStyle = WindowStyle.None;
             ResizeMode = ResizeMode.NoResize;
             AllowsTransparency = true;
@@ -140,9 +139,6 @@ namespace Snapline
             if (handle == IntPtr.Zero) new WindowInteropHelper(this).EnsureHandle();
             Native.SetWindowPos(handle, Native.Topmost, work.Left, work.Top, work.Width, (int)Math.Ceiling(PanelHeight * scale), 0x0010);
             PixelBounds = new System.Drawing.Rectangle(work.Left, work.Top, work.Width, (int)Math.Ceiling(PanelHeight * scale));
-            // Sample before showing the overlay, so the material cannot capture itself.
-            // Only each photo frame's bevel uses this snapshot; screenshot content stays separate.
-            if (!IsVisible) backdrop = GlassBackdrop.Capture(PixelBounds, scale);
             if (!IsVisible) Show();
             Rebuild();
             ++transition;
@@ -185,13 +181,9 @@ namespace Snapline
             var figure = new PathFigure { StartPoint = new Point(0, 10), IsClosed = false, IsFilled = false };
             figure.Segments.Add(segment);
             var geometry = new PathGeometry(); geometry.Figures.Add(figure);
-            var stroke = new LinearGradientBrush(new GradientStopCollection {
-                new GradientStop(Color.FromArgb(0, 195, 201, 208), 0), new GradientStop(Color.FromArgb(230, 195, 201, 208), 0.08),
-                new GradientStop(Color.FromArgb(230, 195, 201, 208), 0.92), new GradientStop(Color.FromArgb(0, 195, 201, 208), 1)
-            }, new Point(0, 0), new Point(1, 0));
-            canvas.Children.Add(new Path { Data = geometry, Stroke = new SolidColorBrush(Color.FromArgb(80, 0, 0, 0)),
-                StrokeThickness = 2.4, RenderTransform = new TranslateTransform(0, 1.4), Width = width, Height = PanelHeight, IsHitTestVisible = false });
-            canvas.Children.Add(new Path { Data = geometry, Stroke = stroke, StrokeThickness = 1.2, Width = width, Height = PanelHeight, IsHitTestVisible = false });
+            // One flat line in the theme accent; the card pegs sit on top of it.
+            canvas.Children.Add(new Path { Data = geometry, Stroke = Ui.Brush("Accent"), StrokeThickness = 2.4,
+                StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, Width = width, Height = PanelHeight, IsHitTestVisible = false });
             canvas.Children.Add(Toolbar(width));
 
             capacity = width >= 680 ? ImageStore.ItemsPerGroup : Math.Max(1, (int)((width - 96) / 174));
@@ -217,7 +209,7 @@ namespace Snapline
                 content.Children.Add(import);
                 double hintWidth = Math.Min(350, width - 48);
                 var hint = new Border { Width = hintWidth, Height = 42, CornerRadius = new CornerRadius(21),
-                    Background = Ui.Brush("Surface"), Child = content };
+                    Background = Ui.Brush("Surface"), BorderBrush = Ui.Brush("Line"), BorderThickness = new Thickness(1), Child = content };
                 Canvas.SetLeft(hint, (width - hint.Width) / 2);
                 Canvas.SetTop(hint, 64);
                 canvas.Children.Add(hint);
@@ -226,7 +218,7 @@ namespace Snapline
             {
                 double x = width / 2 - (shots.Length - 1) * spacing / 2 + i * spacing;
                 double fraction = x / width;
-                var card = new ShotCard(shots[i], controller, backdrop);
+                var card = new ShotCard(shots[i], controller);
                 card.LayoutTransform = new ScaleTransform(cardScale, cardScale);
                 Canvas.SetLeft(card, x - card.Width * cardScale / 2);
                 Canvas.SetTop(card, 10 + 4 * sag * fraction * (1 - fraction) - 9.5);
@@ -292,11 +284,8 @@ namespace Snapline
             return bar;
         }
 
-        internal void PreviewBackdrop(BitmapSource image, double scale)
-        {
-            backdrop = new GlassBackdrop(image, scale);
-            Rebuild();
-        }
+        // Kept for the QA probes that used to feed a desktop sample to the glass material; flat cards only need a rebuild.
+        internal void PreviewBackdrop(BitmapSource image, double scale) { Rebuild(); }
 
         private Border Toolbar(double width)
         {
@@ -305,9 +294,9 @@ namespace Snapline
             grid.ColumnDefinitions.Add(new ColumnDefinition());
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             var status = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-            status.Children.Add(new Path { Data = Geometry.Parse("M 1,9 L 20,9 M 7,3 L 7,17 M 14,3 L 14,17 M 7,3 Q 10.5,0 14,3"),
-                Stroke = Ui.Brush("Ink"), StrokeThickness = 1.6, Width = 18, Height = 18, Margin = new Thickness(0, 0, 8, 0) });
-            status.Children.Add(new TextBlock { Text = "Snapline", FontFamily = new FontFamily("Segoe UI"), FontSize = 13, FontWeight = FontWeights.SemiBold,
+            status.Children.Add(new Path { Data = Geometry.Parse("M 1,6 Q 10.5,10 20,6 M 6,8 L 15,8 L 15,16 Q 15,17 14,17 L 7,17 Q 6,17 6,16 Z"),
+                Stroke = Ui.Brush("Accent"), StrokeThickness = 1.8, StrokeLineJoin = PenLineJoin.Round, Width = 20, Height = 18, Margin = new Thickness(0, 0, 8, 0) });
+            status.Children.Add(new TextBlock { Text = "Cardline", FontFamily = new FontFamily("Segoe UI"), FontSize = 13, FontWeight = FontWeights.SemiBold,
                 Foreground = Ui.Brush("Ink"), VerticalAlignment = VerticalAlignment.Center });
             statusDot = new Ellipse { Width = 6, Height = 6, Margin = new Thickness(16, 0, 7, 0) };
             status.Children.Add(statusDot);

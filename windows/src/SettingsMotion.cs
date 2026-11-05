@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace Snapline
+namespace Cardline
 {
     // Native adaptation of the selected 21st Switch / Slide Tabs / Button / Panel interactions.
     internal sealed class SettingsMotion : IDisposable

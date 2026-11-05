@@ -125,7 +125,7 @@ internal static class StartupMemoryProbe
         try
         {
             var app = Assembly.LoadFrom(assembly);
-            var storeType = app.GetType("Snapline.ImageStore", true);
+            var storeType = app.GetType("Cardline.ImageStore", true);
             if (Path.GetFileName(root).Contains("-stage"))
             {
                 var load = storeType.GetMethod("Load", BindingFlags.Static | BindingFlags.NonPublic);
@@ -141,7 +141,7 @@ internal static class StartupMemoryProbe
                 Console.WriteLine("Full-resolution Load succeeded; PRIVATE_MIB " +
                     (Process.GetCurrentProcess().PrivateMemorySize64 / 1048576.0).ToString("F2", CultureInfo.InvariantCulture));
                 if (Path.GetFileName(root).Contains("-clipboard-")) {
-                    var repair = app.GetType("Snapline.Controller", true).GetMethod("RepairBitmapAlpha", BindingFlags.Static | BindingFlags.NonPublic);
+                    var repair = app.GetType("Cardline.Controller", true).GetMethod("RepairBitmapAlpha", BindingFlags.Static | BindingFlags.NonPublic);
                     object repaired = repair.Invoke(null, new[] { image });
                     if (!Object.ReferenceEquals(image, repaired)) throw new InvalidOperationException("Valid alpha should keep the original image.");
                     Console.WriteLine("Clipboard alpha check succeeded without replacing the original image.");
@@ -217,7 +217,7 @@ internal static class StartupMemoryProbe
     private static int CheckDiagnostics(string assemblyPath, string root)
     {
         var assembly = Assembly.LoadFrom(Path.GetFullPath(assemblyPath));
-        var diagnostics = assembly.GetType("Snapline.StartupDiagnostics", true);
+        var diagnostics = assembly.GetType("Cardline.StartupDiagnostics", true);
         diagnostics.GetField("Phase", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, "Synthetic report test");
         var write = diagnostics.GetMethod("Write", BindingFlags.Static | BindingFlags.NonPublic);
         Directory.CreateDirectory(root);

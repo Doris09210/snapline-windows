@@ -14,11 +14,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class Controller : IDisposable
     {
-        internal const string ClipboardOrigin = "Snapline.Origin";
+        internal const string ClipboardOrigin = "Cardline.Origin";
         internal readonly ImageStore Store;
         internal readonly LineWindow Line;
         internal readonly MessageSink Sink;
@@ -68,11 +68,13 @@ namespace Snapline
             updates = updateClient ?? new Updates();
             StartupDiagnostics.Phase = "Restoring screenshot history";
             Store = new ImageStore(root);
+            Palette.Set(Store.Settings.Theme, Store.Settings.Appearance);
+            Ui.Initialize(); Ui.ApplyTheme(Palette.Current, Palette.CurrentDark);
             StartupDiagnostics.Phase = "Initializing screenshot line and native input";
             Line = new LineWindow(this);
             Sink = new MessageSink(Store.Settings.HotkeyKey, Store.Settings.HotkeyModifiers, Store.Settings.CaptureHotkeyKey, Store.Settings.CaptureHotkeyModifiers, Store.Settings.ClearHotkeyKey, Store.Settings.ClearHotkeyModifiers);
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Snapline.ico")) icon = new Icon(stream);
-            tray = new Forms.NotifyIcon { Icon = icon, Text = "Snapline · 截图晾衣绳", Visible = true };
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Cardline.ico")) icon = new Icon(stream);
+            tray = new Forms.NotifyIcon { Icon = icon, Text = "Cardline · 截图晾衣绳", Visible = true };
             Files = new FileShelf(this, watchFiles);
             var menu = new Forms.ContextMenuStrip();
             toggleMenu = Add(menu, "显示 / 隐藏    " + (Sink.HotkeyRegistered ? Sink.HotkeyText : "点击托盘图标"), Toggle);
@@ -118,7 +120,7 @@ namespace Snapline
             tray.MouseClick += delegate(object sender, Forms.MouseEventArgs e) { if (e.Button == Forms.MouseButtons.Left) Toggle(); };
             tray.BalloonTipClicked += delegate { if (balloonUpdate != null) ShowUpdate(balloonUpdate); };
             Store.Changed += delegate { Line.Rebuild(); latestMenu.Enabled = Store.Items.Count > 0; };
-            tray.Text = Store.Settings.CollectionPaused ? "Snapline · 已暂停自动收集" : "Snapline · 截图晾衣绳";
+            tray.Text = Store.Settings.CollectionPaused ? "Cardline · 已暂停自动收集" : "Cardline · 截图晾衣绳";
             lastSequence = Native.GetClipboardSequenceNumber();
             Sink.ClipboardChanged += delegate { uint sequence = Native.GetClipboardSequenceNumber(); dispatcher.BeginInvoke(new Action(delegate { CaptureClipboard(sequence, 0); })); };
             Sink.ToggleRequested += delegate {
@@ -164,7 +166,7 @@ namespace Snapline
             if (!Sink.ClearHotkeyRegistered) Notify("清空截图栏快捷键 " + Sink.ClearHotkeyText + " 无法注册。请在设置 → 快捷键中更改，仍可使用截图栏按钮或托盘入口。");
             if (Store.Items.Count == 0)
             {
-                tray.ShowBalloonTip(5000, "Snapline · 截图晾衣绳", "按 Win + Shift + S 截图；鼠标停在屏幕顶端即可展开。右键托盘图标打开菜单。", Forms.ToolTipIcon.Info);
+                tray.ShowBalloonTip(5000, "Cardline · 截图晾衣绳", "按 Win + Shift + S 截图；鼠标停在屏幕顶端即可展开。右键托盘图标打开菜单。", Forms.ToolTipIcon.Info);
                 Peek(6);
             }
         }
@@ -177,7 +179,7 @@ namespace Snapline
             return item;
         }
 
-        internal void Notify(string message) { balloonUpdate = null; if (!disposed) tray.ShowBalloonTip(5000, "Snapline", message, Forms.ToolTipIcon.Warning); }
+        internal void Notify(string message) { balloonUpdate = null; if (!disposed) tray.ShowBalloonTip(5000, "Cardline", message, Forms.ToolTipIcon.Warning); }
 
         internal void Toggle()
         {
@@ -374,7 +376,7 @@ namespace Snapline
             data.SetImage(image);
             data.SetData("PNG", new MemoryStream(ImageStore.Png(image)), false);
             data.SetData(DataFormats.FileDrop, new[] { shot.Path });
-            data.SetData(ClipboardOrigin, "Snapline", false);
+            data.SetData(ClipboardOrigin, "Cardline", false);
             data.SetData("Preferred DropEffect", new MemoryStream(BitConverter.GetBytes(1)), false);
             return data;
         }
@@ -397,7 +399,7 @@ namespace Snapline
             if (Store.Items.Count == 0) { Notify("还没有可复制的图片。"); return false; }
             if (!Copy(Store.Items[Store.Items.Count - 1])) return false;
             balloonUpdate = null;
-            tray.ShowBalloonTip(1800, "Snapline", "已复制最近一张图片。", Forms.ToolTipIcon.Info);
+            tray.ShowBalloonTip(1800, "Cardline", "已复制最近一张图片。", Forms.ToolTipIcon.Info);
             return true;
         }
 
@@ -417,7 +419,7 @@ namespace Snapline
             if (watch != null) watch.DiscardPending();
             lastSequence = Native.GetClipboardSequenceNumber();
             pauseMenu.Checked = paused;
-            tray.Text = paused ? "Snapline · 已暂停自动收集" : "Snapline · 截图晾衣绳";
+            tray.Text = paused ? "Cardline · 已暂停自动收集" : "Cardline · 截图晾衣绳";
             Line.RefreshStatus();
             return true;
         }
@@ -467,7 +469,7 @@ namespace Snapline
                 return false;
             }
             clipboardMenu.Checked = clipboard; pauseMenu.Checked = paused; autoUpdateMenu.Checked = automatic;
-            tray.Text = paused ? "Snapline · 已暂停自动收集" : "Snapline · 截图晾衣绳";
+            tray.Text = paused ? "Cardline · 已暂停自动收集" : "Cardline · 截图晾衣绳";
             lastSequence = Native.GetClipboardSequenceNumber();
             if (watch != null) {
                 if (oldPaused != paused) watch.DiscardPending();
@@ -509,19 +511,19 @@ namespace Snapline
                 if (manual)
                 {
                     if (release != null) ShowUpdate(release);
-                    else MessageBox.Show("当前 v" + Updates.CurrentVersion + "，暂无可下载的新版本。", "Snapline · 检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
+                    else MessageBox.Show("当前 v" + Updates.CurrentVersion + "，暂无可下载的新版本。", "Cardline · 检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else if (Store.Settings.AutoCheckUpdates && release != null && Store.Settings.UpdateNotifiedTag != release.Tag)
                 {
                     Store.Settings.UpdateNotifiedTag = release.Tag;
                     balloonUpdate = release;
-                    tray.ShowBalloonTip(8000, "Snapline · 发现 " + release.Tag, "点击查看更新说明并下载" + (release.Prerelease ? "（预发布版本）" : "") + "。", Forms.ToolTipIcon.Info);
+                    tray.ShowBalloonTip(8000, "Cardline · 发现 " + release.Tag, "点击查看更新说明并下载" + (release.Prerelease ? "（预发布版本）" : "") + "。", Forms.ToolTipIcon.Info);
                 }
             }
             catch (Exception ex)
             {
                 if (!Updates.IsError(ex)) throw;
-                if (manual && !disposed) MessageBox.Show("暂时无法检查更新，请稍后重试或查看发布页。\n" + ex.Message, "Snapline · 检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (manual && !disposed) MessageBox.Show("暂时无法检查更新，请稍后重试或查看发布页。\n" + ex.Message, "Cardline · 检查更新", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             finally
             {
@@ -766,7 +768,7 @@ namespace Snapline
                 ToolDesign.ApplyAppearance(Store.Settings.Appearance);
                 ToolDesign.AppearanceChanged = delegate(bool dark) {
                     string previous = Store.Settings.Appearance; Store.Settings.Appearance = dark ? "Dark" : "Light";
-                    try { Store.Save(); Files.Window.ApplyAppearance(Store.Settings.Appearance); }
+                    try { Store.Save(); ApplyTheme(); }
                     catch (Exception ex) {
                         if (!(ex is IOException) && !(ex is UnauthorizedAccessException)) throw;
                         Store.Settings.Appearance = previous; ToolDesign.ApplyAppearance(previous); Notify("外观保存失败：" + ex.Message);
@@ -852,6 +854,16 @@ namespace Snapline
         internal void ShowHotkeySettings()
         { ShowSettings("Keys"); }
 
+        // Pushes the saved theme and light / dark mode to every surface that is alive right now.
+        internal void ApplyTheme()
+        {
+            Palette.Set(Store.Settings.Theme, Store.Settings.Appearance);
+            Ui.ApplyTheme(Palette.Current, Palette.CurrentDark);
+            Line.Rebuild();
+            Files.Window.ApplyAppearance(Store.Settings.Appearance);
+            if (fileToolsWindow != null) ToolDesign.ApplyAppearance(Store.Settings.Appearance);
+        }
+
         internal void ShowSettings(string page)
         {
             if (settingsWindow != null) { settingsWindow.ShowPage(page); settingsWindow.Activate(); return; }
@@ -870,7 +882,7 @@ namespace Snapline
         internal void Help()
         {
             Busy = true;
-            try { MessageBox.Show("Win + Shift + S 或 PrintScreen 截图后，图片自动挂入。\n收集剪贴板图片也会收集从其他应用复制的图片，可在托盘菜单关闭。\n\n鼠标在屏幕顶端停留，或 " + Sink.HotkeyText + "：展开 / 收起。\n右键托盘 → 设置快捷键：录入单键或组合键，保存后立即生效。\n单击：复制图片。双击：用默认图片应用打开。\n长按 0.45 秒：用画图编辑，保存后刷新缩略图。\n鼠标指向截图时，C 复制、A 编辑、D / Delete 取下。\n拖入应用：发送图片或文件副本。\n拖入应用或文件夹：复制，截图继续留在绳上。\n右键：另存为、在文件夹中显示或取下。\n\n" + Sink.CaptureHotkeyText + " 或工具条、托盘 → 区域截图：拖动框选，Esc 取消。\n设置 → 快捷键：自定义显示、区域截图和清空截图栏按键。\n设置 → 截图 → 截图包含鼠标指针：默认关闭。\n开启后先框选，再摆放指针，按 Enter 截图；不改变 Win + Shift + S。\n\n托盘 → 复制最近一张：直接复制，无须展开。\n暂停所有自动收集：同时暂停剪贴板和文件夹，重启后保持。\n开机启动：可选，默认关闭；移动程序后请重新勾选。\n自动检查更新：默认开启，每 24 小时检查并提醒；可关闭。\n安装版下载 EXE 后点击安装更新，覆盖升级；便携版退出后解压 ZIP。\n\n叉号或 D / Delete：收件夹图片进入回收站；外部原文件保留。\n截图每 9 张一组，超过后新建一组，旧组仍保留并随重启恢复。\n在图片或分组条上滚轮向上看旧图、向下看新图；也可点前后箭头或“最新”。\n屏幕较窄时可继续翻看组内其余图片。\n" + Sink.ClearHotkeyText + "：清空全部截图分组，保留全部原文件。\n设置 → 截图：可选拖到未接收区域时取下卡片，默认关闭，Esc 取消保留。\n\nSnapline " + Updates.CurrentVersion + " · Windows 非官方移植版\n基于 Alejandro Buján 的 Tendedero 交互与 MIT 代码。", "Snapline · 使用说明", MessageBoxButton.OK, MessageBoxImage.Information); }
+            try { MessageBox.Show("Win + Shift + S 或 PrintScreen 截图后，图片自动挂入。\n收集剪贴板图片也会收集从其他应用复制的图片，可在托盘菜单关闭。\n\n鼠标在屏幕顶端停留，或 " + Sink.HotkeyText + "：展开 / 收起。\n右键托盘 → 设置快捷键：录入单键或组合键，保存后立即生效。\n单击：复制图片。双击：用默认图片应用打开。\n长按 0.45 秒：用画图编辑，保存后刷新缩略图。\n鼠标指向截图时，C 复制、A 编辑、D / Delete 取下。\n拖入应用：发送图片或文件副本。\n拖入应用或文件夹：复制，截图继续留在绳上。\n右键：另存为、在文件夹中显示或取下。\n\n" + Sink.CaptureHotkeyText + " 或工具条、托盘 → 区域截图：拖动框选，Esc 取消。\n设置 → 快捷键：自定义显示、区域截图和清空截图栏按键。\n设置 → 截图 → 截图包含鼠标指针：默认关闭。\n开启后先框选，再摆放指针，按 Enter 截图；不改变 Win + Shift + S。\n\n托盘 → 复制最近一张：直接复制，无须展开。\n暂停所有自动收集：同时暂停剪贴板和文件夹，重启后保持。\n开机启动：可选，默认关闭；移动程序后请重新勾选。\n自动检查更新：默认开启，每 24 小时检查并提醒；可关闭。\n安装版下载 EXE 后点击安装更新，覆盖升级；便携版退出后解压 ZIP。\n\n叉号或 D / Delete：收件夹图片进入回收站；外部原文件保留。\n截图每 9 张一组，超过后新建一组，旧组仍保留并随重启恢复。\n在图片或分组条上滚轮向上看旧图、向下看新图；也可点前后箭头或“最新”。\n屏幕较窄时可继续翻看组内其余图片。\n" + Sink.ClearHotkeyText + "：清空全部截图分组，保留全部原文件。\n设置 → 截图：可选拖到未接收区域时取下卡片，默认关闭，Esc 取消保留。\n\nCardline " + Updates.CurrentVersion + " · Windows 非官方移植版\n基于 Alejandro Buján 的 Tendedero 交互与 MIT 代码。", "Cardline · 使用说明", MessageBoxButton.OK, MessageBoxImage.Information); }
             finally { Busy = DialogOpen; }
         }
 

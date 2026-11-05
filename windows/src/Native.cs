@@ -6,7 +6,7 @@ using System.Text;
 using System.Windows.Interop;
 using Forms = System.Windows.Forms;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class Native
     {
@@ -206,7 +206,7 @@ namespace Snapline
 
         internal MessageSink(uint key, uint modifiers, uint captureKey, uint captureModifiers, uint clearKey, uint clearModifiers)
         {
-            source = new HwndSource(new HwndSourceParameters("Snapline messages") {
+            source = new HwndSource(new HwndSourceParameters("Cardline messages") {
                 ParentWindow = new IntPtr(-3), Width = 0, Height = 0, WindowStyle = 0
             });
             source.AddHook(Hook);

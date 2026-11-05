@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Drawing = System.Drawing;
 
-namespace Snapline
+namespace Cardline
 {
     // Native adaptation of the supplied skill: refract the backdrop at each
     // photo frame's actual position, keeping the screenshot in a separate layer.

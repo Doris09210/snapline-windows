@@ -11,7 +11,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $version = $ReleaseTag.Substring(1)
 $packageVersion = $version
 if ($Prerelease) { $packageVersion += '-preview' }
-$zipName = 'Snapline-Windows-' + $ReleaseTag + '.zip'
+$zipName = 'Cardline-Windows-' + $ReleaseTag + '.zip'
 $checksumLines = @(Get-Content -LiteralPath $ChecksumFile | Where-Object { $_ -match ('^[0-9a-fA-F]{64}  ' + [regex]::Escape($zipName) + '$') })
 if ($checksumLines.Count -ne 1) { throw 'Release checksum entry is missing or duplicated.' }
 $expectedHash = $checksumLines[0].Substring(0, 64)
@@ -20,7 +20,7 @@ $outputRoot = Join-Path $PSScriptRoot 'dist\nuget'
 $stageRoot = Join-Path $outputRoot ('stage-' + [guid]::NewGuid().ToString('N'))
 $portableRoot = Join-Path $stageRoot 'portable'
 New-Item -ItemType Directory -Force -Path $portableRoot | Out-Null
-$portableFiles = @('Snapline.exe', 'Snapline.exe.config', 'README.zh-CN.md', 'LICENSE', 'UPSTREAM-LICENSE.txt', 'NOTICE.md', 'QA.md', 'preview.png', 'PDF-TOOLS-PLAN.zh-CN.md')
+$portableFiles = @('Cardline.exe', 'Cardline.exe.config', 'README.zh-CN.md', 'LICENSE', 'UPSTREAM-LICENSE.txt', 'NOTICE.md', 'QA.md', 'preview.png', 'PDF-TOOLS-PLAN.zh-CN.md')
 $dependencies = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'conversion-dependencies.lock.json') -Raw | ConvertFrom-Json
 foreach ($dependency in $dependencies) { foreach ($asset in $dependency.files) {
     $portableFiles += 'Converters/' + $asset.target.Replace('\', '/')
@@ -33,7 +33,7 @@ try {
         $files = @($archive.Entries | Where-Object { $_.Name.Length -gt 0 })
         if ($files.Count -ne $portableFiles.Count) { throw 'Unexpected files in the portable release; update the package allowlist before publishing.' }
         foreach ($name in $portableFiles) {
-            $matchingEntries = @($files | Where-Object { $_.FullName.Replace('\', '/') -ceq ('Snapline/' + $name) })
+            $matchingEntries = @($files | Where-Object { $_.FullName.Replace('\', '/') -ceq ('Cardline/' + $name) })
             if ($matchingEntries.Count -ne 1) { throw ('Missing or duplicated portable file: ' + $name) }
             $destination = [IO.Path]::GetFullPath((Join-Path $portableRoot $name))
             if (-not $destination.StartsWith($portableRoot + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Portable file escaped its directory.' }
@@ -41,22 +41,22 @@ try {
             [System.IO.Compression.ZipFileExtensions]::ExtractToFile($matchingEntries[0], $destination)
         }
     } finally { $archive.Dispose() }
-    $exeVersion = [System.Reflection.AssemblyName]::GetAssemblyName((Join-Path $portableRoot 'Snapline.exe')).Version.ToString(3)
+    $exeVersion = [System.Reflection.AssemblyName]::GetAssemblyName((Join-Path $portableRoot 'Cardline.exe')).Version.ToString(3)
     if ($exeVersion -cne $version) { throw 'Executable version does not match the release tag.' }
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'PACKAGE-README.md') -Destination $stageRoot
-    [xml]$manifest = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Snapline.nuspec') -Raw
+    [xml]$manifest = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Cardline.nuspec') -Raw
     $manifest.package.metadata.version = $packageVersion
     $manifest.package.metadata.repository.commit = $SourceCommit
-    $manifestPath = Join-Path $stageRoot 'Snapline.nuspec'
+    $manifestPath = Join-Path $stageRoot 'Cardline.nuspec'
     $manifest.Save($manifestPath)
     & $NuGetPath pack $manifestPath -BasePath $stageRoot -OutputDirectory $outputRoot -NonInteractive
     if ($LASTEXITCODE -ne 0) { throw 'NuGet packaging failed.' }
-    $packagePath = Join-Path $outputRoot ('jiuyang5354.Snapline.Windows.' + $packageVersion + '.nupkg')
+    $packagePath = Join-Path $outputRoot ('Doris09210.Cardline.Windows.' + $packageVersion + '.nupkg')
     $packageArchive = [System.IO.Compression.ZipFile]::OpenRead($packagePath)
     $hasher = [System.Security.Cryptography.SHA256]::Create()
     try {
         foreach ($name in $portableFiles) {
-            $entry = $packageArchive.GetEntry('tools/Snapline/' + $name)
+            $entry = $packageArchive.GetEntry('tools/Cardline/' + $name)
             if ($null -eq $entry) { throw ('Missing packaged file: ' + $name) }
             $stream = $entry.Open()
             try { $entryHash = [BitConverter]::ToString($hasher.ComputeHash($stream)).Replace('-', '') }

@@ -10,7 +10,7 @@ using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
-namespace Snapline
+namespace Cardline
 {
     internal enum PdfAction { Merge, Split, Extract, DeletePages, Rotate, PageNumbers, Watermark, Protect, Unprotect, Images }
     internal sealed class PdfOptions

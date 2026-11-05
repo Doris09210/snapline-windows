@@ -11,7 +11,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Shell;
 
-namespace Snapline
+namespace Cardline
 {
     internal static class ToolDesign
     {
@@ -34,17 +34,27 @@ namespace Snapline
             internal long MotionVersion;
         }
         private static readonly string[] Keys = { "Paper", "Surface", "SurfaceSoft", "Tint", "Ink", "Muted", "Line", "Accent", "Hover", "Active", "PrimaryFill", "PrimaryHover", "PrimaryText", "Success", "Track" };
-        private static readonly string[] Light = { "#F6F6F3", "#FFFFFF", "#FAFAF8", "#F0F1ED", "#252A25", "#777D74", "#E6E8E2", "#AD5636", "#F0F1EC", "#F7EBE4", "#30392E", "#45513F", "#FFFFFF", "#4D6C49", "#999F94" };
-        private static readonly string[] Dark = { "#1B1E1B", "#232823", "#212521", "#171B17", "#ECEEE6", "#A5AD9F", "#343B33", "#E6A17F", "#2D352B", "#3F332A", "#D8DFCF", "#C4D0B9", "#20271B", "#A3BD96", "#697660" };
+        // Every tool surface color derives from the shared palette so the four themes stay a single table.
+        private static string[] Tones(bool dark)
+        {
+            string theme = Palette.Current;
+            return new[] {
+                Palette.Hex(theme, dark, "Paper"), Palette.Hex(theme, dark, "Surface"), Palette.Hex(theme, dark, "Sidebar"), Palette.Hex(theme, dark, "Tint"),
+                Palette.Hex(theme, dark, "Ink"), Palette.Hex(theme, dark, "Muted"), Palette.Hex(theme, dark, "Line"), Palette.Hex(theme, dark, "Accent"),
+                Palette.Hex(theme, dark, "Tint"), Palette.Hex(theme, dark, "AccentSoft"), Palette.Hex(theme, dark, "PrimaryFill"),
+                Palette.MixHex(theme, dark, "PrimaryFill", "Ink", 0.18), Palette.Hex(theme, dark, "PrimaryText"), Palette.Hex(theme, dark, "Success"), Palette.Hex(theme, dark, "Track")
+            };
+        }
         internal static void Initialize()
         {
             if (initialized) return;
             Ui.Initialize();
             foreach (string file in new[] { "ToolTheme", "ToolIcons" })
-                using (var stream = typeof(ToolDesign).Assembly.GetManifestResourceStream("Snapline." + file + ".xaml"))
+                using (var stream = typeof(ToolDesign).Assembly.GetManifestResourceStream("Cardline." + file + ".xaml"))
                     Application.Current.Resources.MergedDictionaries.Add((ResourceDictionary)System.Windows.Markup.XamlReader.Load(stream));
+            string[] initial = Tones(Palette.CurrentDark);
             for (int i = 0; i < Keys.Length; i++) {
-                var tone = new Tone(); tone.Set(Light[i]); tones.Add(Keys[i], tone);
+                var tone = new Tone(); tone.Set(initial[i]); tones.Add(Keys[i], tone);
                 var brush = new SolidColorBrush(); BindingOperations.SetBinding(brush, SolidColorBrush.ColorProperty, new Binding("Color") { Source = tone }); Application.Current.Resources["Tool." + Keys[i]] = brush;
             }
             initialized = true;
@@ -52,14 +62,14 @@ namespace Snapline
         internal static void Theme(bool value)
         {
             dark = value;
-            for (int i = 0; i < Keys.Length; i++) tones[Keys[i]].Set((dark ? Dark : Light)[i]);
+            string[] values = Tones(dark);
+            for (int i = 0; i < Keys.Length; i++) tones[Keys[i]].Set(values[i]);
             foreach (Window window in Application.Current.Windows) foreach (var button in Logical(window).OfType<Button>().Where(button => button.Tag as string == "ThemeToggle")) button.Content = dark ? "浅色 ☼" : "深色 ◐";
         }
         internal static void ApplyAppearance(string value)
         {
             Initialize();
-            Theme(value == "Dark" || (value == "System" && Equals(Microsoft.Win32.Registry.GetValue(
-                @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 1), 0)));
+            Theme(Palette.IsDark(value));
         }
         internal static Brush Brush(string name) { return (Brush)Application.Current.Resources["Tool." + name]; }
         private static TextBlock Text(string value, double size, string color = "Ink")
@@ -101,8 +111,8 @@ namespace Snapline
             var root = new Grid { Background = Brush("Paper") }; root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(43) }); root.RowDefinitions.Add(new RowDefinition());
             var caption = new Grid { Margin = new Thickness(19, 0, 8, 0) }; caption.ColumnDefinitions.Add(new ColumnDefinition()); caption.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             var brand = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-            var dot = new Border { Width = 22, Height = 22, CornerRadius = new CornerRadius(7), Background = Brush("PrimaryFill"), Child = new TextBlock { Text = "S", Foreground = Brush("PrimaryText"), FontSize = 13, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } }; brand.Children.Add(dot);
-            var name = Text("Snapline", 12); name.FontWeight = FontWeights.SemiBold; name.Margin = new Thickness(9, 0, 0, 0); brand.Children.Add(name);
+            var dot = new Border { Width = 22, Height = 22, CornerRadius = new CornerRadius(7), Background = Brush("PrimaryFill"), Child = new TextBlock { Text = "C", Foreground = Brush("PrimaryText"), FontSize = 13, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } }; brand.Children.Add(dot);
+            var name = Text("Cardline", 12); name.FontWeight = FontWeights.SemiBold; name.Margin = new Thickness(9, 0, 0, 0); brand.Children.Add(name);
             var separator = Text(" /  文件工作台", 11, "Muted"); separator.Margin = new Thickness(9, 0, 0, 0); brand.Children.Add(separator); caption.Children.Add(brand);
             var system = new StackPanel { Orientation = Orientation.Horizontal }; Grid.SetColumn(system, 1); caption.Children.Add(system);
             var minimize = Button("−", delegate { window.WindowState = WindowState.Minimized; });

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Threading;
 
-namespace Snapline
+namespace Cardline
 {
     internal sealed class CaptureWatch : IDisposable
     {

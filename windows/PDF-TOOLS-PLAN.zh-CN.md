@@ -1,6 +1,6 @@
 # PDF 与图片工具箱：分批实施
 
-方向参考 [iLovePDF 的工具分类](https://www.ilovepdf.com/zh-cn)。Snapline 使用自己的原生界面与本地处理实现，不调用该网站转换用户文件。
+方向参考 [iLovePDF 的工具分类](https://www.ilovepdf.com/zh-cn)。Cardline 使用自己的原生界面与本地处理实现，不调用该网站转换用户文件。
 
 ## 第一批：本地文件与常用 PDF 操作
 
@@ -34,8 +34,8 @@ WebP 使用随包携带的 Google 工具，当前需要 64 位 Windows。PDF 支
 
 ## 依赖与维护
 
-PDF 使用 MIT 许可的 PDFsharp-GDI 6.2.4，WebP 使用 Google 官方 libwebp 1.6.0 Windows x64 工具。版本、来源、SHA-256 与所需文件固定在 `conversion-dependencies.lock.json`，`restore-converters.ps1` 校验后恢复到 `Converters`；运行转换时不下载组件。组件许可证随包保留，Snapline 上游与 Dropline 的原有声明保留。
+PDF 使用 MIT 许可的 PDFsharp-GDI 6.2.4，WebP 使用 Google 官方 libwebp 1.6.0 Windows x64 工具。版本、来源、SHA-256 与所需文件固定在 `conversion-dependencies.lock.json`，`restore-converters.ps1` 校验后恢复到 `Converters`；运行转换时不下载组件。组件许可证随包保留，Cardline 上游与 Dropline 的原有声明保留。
 
 PDFsharp 6.5 起改变了授权，官方同时说明旧分支不再继续更新。公开发布前需复核旧分支的维护与已知问题，并评估后续引擎 / 授权方案；不自动把新授权版本混入 MIT 发布包。来源：[6.2.4 MIT 许可](https://raw.githubusercontent.com/empira/PDFsharp/v6.2.4/LICENSE)、[6.5 授权](https://raw.githubusercontent.com/empira/PDFsharp/v6.5.0/LICENSE)、[官方维护说明](https://www.pdfsharp.com/)。
 
-2026-10-28 的 Beta 1 决策：继续固定 6.2.4 与现有校验和，保留 128 MB / 512 页 / 200 输入等限制，不改变 Snapline 的现有许可，也不自动替换为 6.5。官方仓库公开安全公告接口本次返回空列表，检查范围仅为该接口，记录随候选验证材料保存。Beta 期间收集普通 PDF 的实际兼容情况；正式版前重新评估维护中的替代引擎或经过确认的新版授权方案，再决定迁移，不在这一轮仓促更换处理引擎。
+2026-10-28 的 Beta 1 决策：继续固定 6.2.4 与现有校验和，保留 128 MB / 512 页 / 200 输入等限制，不改变 Cardline 的现有许可，也不自动替换为 6.5。官方仓库公开安全公告接口本次返回空列表，检查范围仅为该接口，记录随候选验证材料保存。Beta 期间收集普通 PDF 的实际兼容情况；正式版前重新评估维护中的替代引擎或经过确认的新版授权方案，再决定迁移，不在这一轮仓促更换处理引擎。
